@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:audioplayers/audioplayers.dart';
-
+import 'package:just_audio/just_audio.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:get/get.dart';
 
@@ -13,36 +12,18 @@ class DownloadController extends GetxController {
   final YoutubeExplode youtube = YoutubeExplode();
   final AudioPlayer audioPlayer = AudioPlayer();
 
-  PlayerState state = PlayerState.stopped;
-
   RxString currentUrl = "".obs;
 
   void play(String link) async {
-    state = PlayerState.playing;
     currentUrl.value = link;
     StreamManifest manifest =
         await youtube.videos.streamsClient.getManifest(link);
+
     var streamInfo = manifest.audioOnly.withHighestBitrate();
+    print(streamInfo.url.toString());
+    await audioPlayer.setUrl(streamInfo.url.toString());
 
-    Stream<List<int>> stream = youtube.videos.streamsClient.get(streamInfo);
-
-    Uint8List bytes2 = await readBytes(stream);
-    print("2.bytelar okundu..");
-
-    audioPlayer.play(BytesSource(bytes2));
-  }
-
-  Future<Uint8List> readBytes(Stream<List<int>> byteStream) async {
-    // Take the first 100 bytes
-    List<int> first100Bytes = await byteStream.fold<List<int>>(
-      <int>[],
-      (buffer, chunk) => buffer..addAll(chunk),
-    );
-
-    // Convert the List<int> to Uint8List
-    Uint8List uint8List = Uint8List.fromList(first100Bytes);
-
-    return uint8List;
+    audioPlayer.play();
   }
 
   void stop() async {

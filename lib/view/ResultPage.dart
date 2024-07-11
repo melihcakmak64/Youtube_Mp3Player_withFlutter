@@ -85,19 +85,34 @@ class _ResultPageState extends State<ResultPage> {
         ),
         title: Text("${video.title} ($formattedDuration)"),
         trailing: Obx(() {
-          return controller.currentUrl.value == video.url
-              ? IconButton(
-                  icon: const Icon(Icons.stop),
-                  onPressed: () {
-                    controller.stop();
-                  },
-                )
-              : IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: () {
-                    controller.play(video.url);
-                  },
-                );
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              controller.currentUrl.value == video.url
+                  ? IconButton(
+                      icon: const Icon(Icons.stop),
+                      onPressed: () {
+                        controller.stop();
+                      },
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.play_arrow),
+                      onPressed: () {
+                        controller.play(video.url);
+                      },
+                    ),
+              const SizedBox(width: 8), // Add some spacing between buttons
+              (controller.currentUrl.value == video.url &&
+                      controller.isDownloading.value)
+                  ? const CircularProgressIndicator()
+                  : IconButton(
+                      icon: const Icon(Icons.download),
+                      onPressed: () {
+                        controller.download(video.url, video.title);
+                      },
+                    ),
+            ],
+          );
         }),
       ),
     );

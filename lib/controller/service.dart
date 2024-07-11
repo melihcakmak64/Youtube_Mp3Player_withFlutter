@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:typed_data';
-
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ class DownloadController extends GetxController {
   final AudioPlayer audioPlayer = AudioPlayer();
 
   RxString currentUrl = "".obs;
+  RxBool isDownloading = false.obs;
 
   void play(String link) async {
     currentUrl.value = link;
@@ -24,6 +26,34 @@ class DownloadController extends GetxController {
     await audioPlayer.setUrl(streamInfo.url.toString());
 
     audioPlayer.play();
+  }
+
+  void download(String link, String name) async {
+    var status = await Permission.storage.status;
+    if (status.isGranted) {
+      currentUrl.value = link;
+      isDownloading.value = true;
+      StreamManifest manifest =
+          await youtube.videos.streamsClient.getManifest(link);
+      AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
+      if (streamInfo != null) {
+        var stream = youtube.videos.streamsClient.get(streamInfo);
+        var directory = await getExternalStorageDirectory();
+        String downloadPath =
+            '${directory!.parent.parent.parent.parent.path}/Download/MusicFolder';
+        await Directory(downloadPath).create(recursive: true);
+        File file = File('$downloadPath/$name.mp3');
+        var fileStream = file.openWrite();
+        await stream.pipe(fileStream);
+        await fileStream.flush();
+        await fileStream.close();
+        currentUrl.value = "";
+        isDownloading.value = false;
+        Get.snackbar("Sonuc", "İndirme başarılı");
+      }
+    } else {
+      status = await Permission.storage.request();
+    }
   }
 
   void stop() async {

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'package:music_player/model/newModel.dart';
 import 'package:music_player/services/MusicPlayerService.dart';
+import 'package:music_player/services/PermissionHandler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:get/get.dart';
@@ -34,7 +34,7 @@ class DownloadController extends GetxController {
   }
 
   Future<void> download(ExtendedVideo video) async {
-    var status = await Permission.storage.status;
+    var status = await Permission.audio.status;
     if (status.isGranted) {
       currentUrl.value = video.url;
       isDownloading.value = true;
@@ -60,7 +60,7 @@ class DownloadController extends GetxController {
         _updateVideoAsDownloaded(video);
       }
     } else {
-      status = await Permission.storage.request();
+      await PermissionHandler.chekPermission();
     }
   }
 

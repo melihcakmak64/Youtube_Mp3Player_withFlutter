@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_player/services/PermissionHandler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'view/HomePage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await _requestPermission();
+  await PermissionHandler.chekPermission();
   runApp(const MainApp());
-}
-
-Future<void> _requestPermission() async {
-  var status = await Permission.storage.status;
-  if (!status.isGranted) {
-    await Permission.storage.request();
-  }
 }
 
 class MainApp extends StatelessWidget {

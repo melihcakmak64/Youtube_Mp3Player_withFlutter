@@ -35,8 +35,7 @@ class DownloadController extends GetxController {
 
   Future<void> download(ExtendedVideo video) async {
     var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      print("izin verildiii");
+    if (status.isGranted) {
       currentUrl.value = video.url;
       isDownloading.value = true;
       StreamManifest manifest =
@@ -99,8 +98,6 @@ class DownloadController extends GetxController {
               await isDownloaded(p0.url) // isDownloaded attribute'u ayarla
           );
       _videoList.add(video);
-      print(
-          "Elemean searching : ${video.title}    durum : ${video.isDownloaded}");
     });
 
     return _videoList;
@@ -174,21 +171,9 @@ class DownloadController extends GetxController {
 
   void _updateVideoAsDownloaded(ExtendedVideo video) {
     video.isDownloaded.value = true;
-    print("Video downloaded ${video.title}");
-    _videoList.forEach(
-      (element) {
-        print("Elemean: ${element.title}    durum : ${element.isDownloaded}");
-      },
-    );
   }
 
   void _updateVideoAsNotDownloaded(ExtendedVideo video) {
     video.isDownloaded.value = false;
-    print("Video removed ${video.title}");
-    _videoList.forEach(
-      (element) {
-        print("Elemean: ${element.title}    durum : ${element.isDownloaded}");
-      },
-    );
   }
 }

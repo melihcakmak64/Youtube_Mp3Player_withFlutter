@@ -11,4 +11,8 @@ class MusicPlayerService {
   Future<void> stop() async {
     await audioPlayer.stop();
   }
+
+  bool isPlaying() {
+    return audioPlayer.playing;
+  }
 }

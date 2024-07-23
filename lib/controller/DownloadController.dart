@@ -34,6 +34,9 @@ class DownloadController extends GetxController {
   }
 
   Future<void> download(ExtendedVideo video) async {
+    if (player.isPlaying()) {
+      player.stop();
+    }
     var status = await Permission.audio.status;
     if (status.isGranted) {
       currentUrl.value = video.url;

@@ -37,8 +37,9 @@ class DownloadController extends GetxController {
     if (player.isPlaying()) {
       player.stop();
     }
-    var status = await Permission.audio.status;
-    if (status.isGranted) {
+    var status = (await Permission.audio.status.isGranted) ||
+        (await Permission.storage.status.isGranted);
+    if (status) {
       currentUrl.value = video.url;
       isDownloading.value = true;
       StreamManifest manifest =

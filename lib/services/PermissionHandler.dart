@@ -15,7 +15,7 @@ class PermissionHandler {
     } else {
       if (!(await Permission.audio.isGranted)) {
         await Permission.audio.request();
-      } else if (!(await Permission.audio.isPermanentlyDenied)) {
+      } else if ((await Permission.audio.isPermanentlyDenied)) {
         openAppSettings();
       }
     }

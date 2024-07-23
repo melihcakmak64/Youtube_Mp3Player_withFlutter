@@ -89,22 +89,18 @@ class _ResultPageState extends State<ResultPage> {
             children: [
               IconButton(
                 icon: Icon(
-                  (controller.currentUrl.value == video.url &&
-                          controller.isDownloading.value == false)
-                      ? Icons.stop
-                      : Icons.play_arrow,
+                  (video.isPlaying.value) ? Icons.stop : Icons.play_arrow,
                 ),
                 onPressed: () {
-                  if (controller.currentUrl.value == video.url) {
-                    controller.stop();
+                  if (video.isPlaying.value) {
+                    controller.stop(video);
                   } else {
-                    controller.play(video.url);
+                    controller.play(video);
                   }
                 },
               ),
               const SizedBox(width: 8),
-              (controller.isDownloading.value &&
-                      controller.currentUrl.value == video.url)
+              (video.isDownloading.value)
                   ? const CircularProgressIndicator()
                   : (video.isDownloaded.value)
                       ? IconButton(

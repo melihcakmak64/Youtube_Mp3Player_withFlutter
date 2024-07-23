@@ -15,33 +15,39 @@ class DownloadController extends GetxController {
   VideoSearchList? searchResult;
   final YoutubeExplode youtube = YoutubeExplode();
   final MusicPlayerService player = MusicPlayerService();
+  ExtendedVideo? currentVideo;
 
-  RxString currentUrl = "".obs;
-  RxBool isDownloading = false.obs;
+  // RxString currentUrl = "".obs;
+  // RxBool isDownloading = false.obs;
 
-  Future<String> getMusicUrl(String link) async {
-    currentUrl.value = link;
-
+  Future<String> getMusicUrl(ExtendedVideo video) async {
     StreamManifest manifest =
-        await youtube.videos.streamsClient.getManifest(link);
+        await youtube.videos.streamsClient.getManifest(video.url);
     var streamInfo = manifest.audioOnly.withHighestBitrate();
     return streamInfo.url.toString();
   }
 
-  void play(String link) async {
-    String url = await getMusicUrl(link);
+  void play(ExtendedVideo video) async {
+    if (currentVideo != null) {
+      if (currentVideo!.url != video.url) {
+        currentVideo!.isPlaying.value = false;
+      }
+    }
+    video.isPlaying.value = true;
+
+    String url = await getMusicUrl(video);
     await player.playMusicFromUrl(url);
+    currentVideo = video;
   }
 
   Future<void> download(ExtendedVideo video) async {
     if (player.isPlaying()) {
-      player.stop();
+      player.stop(video);
     }
     var status = (await Permission.audio.status.isGranted) ||
         (await Permission.storage.status.isGranted);
     if (status) {
-      currentUrl.value = video.url;
-      isDownloading.value = true;
+      video.isDownloading.value = true;
       StreamManifest manifest =
           await youtube.videos.streamsClient.getManifest(video.url);
       AudioOnlyStreamInfo streamInfo = manifest.audioOnly.withHighestBitrate();
@@ -56,8 +62,7 @@ class DownloadController extends GetxController {
         await stream.pipe(fileStream);
         await fileStream.flush();
         await fileStream.close();
-        currentUrl.value = "";
-        isDownloading.value = false;
+        video.isDownloading.value = false;
         await _markVideoAsDownloaded(video.url);
         Get.snackbar("Sonuc", "İndirme başarılı");
         // Update the video in the list
@@ -68,9 +73,9 @@ class DownloadController extends GetxController {
     }
   }
 
-  void stop() async {
-    await player.stop();
-    currentUrl.value = "";
+  void stop(ExtendedVideo video) async {
+    await player.stop(video);
+    video.isPlaying.value = false;
   }
 
   Future<bool> isDownloaded(String url) async {

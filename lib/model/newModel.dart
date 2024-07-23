@@ -20,6 +20,8 @@ class ExtendedVideo {
   RxBool isDownloaded;
   final WatchPage? watchPage;
   final String url;
+  RxBool isPlaying = false.obs;
+  RxBool isDownloading = false.obs;
 
   ExtendedVideo({
     required this.id,

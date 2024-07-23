@@ -1,4 +1,5 @@
 import 'package:just_audio/just_audio.dart';
+import 'package:music_player/model/newModel.dart';
 
 class MusicPlayerService {
   final AudioPlayer audioPlayer = AudioPlayer();
@@ -8,7 +9,8 @@ class MusicPlayerService {
     audioPlayer.play();
   }
 
-  Future<void> stop() async {
+  Future<void> stop(ExtendedVideo video) async {
+    video.isPlaying.value = false;
     await audioPlayer.stop();
   }
 

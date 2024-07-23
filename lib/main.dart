@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/services/PermissionHandler.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'view/HomePage.dart';
 
 void main() async {

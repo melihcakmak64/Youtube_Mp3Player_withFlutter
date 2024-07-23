@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import '../controller/service.dart';
+import 'package:music_player/model/newModel.dart';
+import '../controller/DownloadController.dart';
 
 class ResultPage extends StatefulWidget {
   final String searchTerm;
@@ -15,7 +15,6 @@ class _ResultPageState extends State<ResultPage> {
   final DownloadController controller = Get.put(DownloadController());
   final ScrollController scrollController = ScrollController();
   bool isLoading = false;
-  String currentVideoUrl = "";
 
   @override
   void initState() {
@@ -65,7 +64,7 @@ class _ResultPageState extends State<ResultPage> {
     );
   }
 
-  Card getCard(Video video) {
+  Card getCard(ExtendedVideo video) {
     final duration = video.duration;
     final hours = duration?.inHours ?? 0;
     final minutes = duration?.inMinutes.remainder(60) ?? 0;
@@ -88,29 +87,38 @@ class _ResultPageState extends State<ResultPage> {
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              controller.currentUrl.value == video.url
-                  ? IconButton(
-                      icon: const Icon(Icons.stop),
-                      onPressed: () {
-                        controller.stop();
-                      },
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.play_arrow),
-                      onPressed: () {
-                        controller.play(video.url);
-                      },
-                    ),
-              const SizedBox(width: 8), // Add some spacing between buttons
-              (controller.currentUrl.value == video.url &&
-                      controller.isDownloading.value)
+              IconButton(
+                icon: Icon(
+                  (controller.currentUrl.value == video.url &&
+                          controller.isDownloading.value == false)
+                      ? Icons.stop
+                      : Icons.play_arrow,
+                ),
+                onPressed: () {
+                  if (controller.currentUrl.value == video.url) {
+                    controller.stop();
+                  } else {
+                    controller.play(video.url);
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              (controller.isDownloading.value &&
+                      controller.currentUrl.value == video.url)
                   ? const CircularProgressIndicator()
-                  : IconButton(
-                      icon: const Icon(Icons.download),
-                      onPressed: () {
-                        controller.download(video.url, video.title);
-                      },
-                    ),
+                  : (video.isDownloaded.value)
+                      ? IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () async {
+                            await controller.deleteFile(video);
+                          },
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.download),
+                          onPressed: () async {
+                            await controller.download(video);
+                          },
+                        ),
             ],
           );
         }),

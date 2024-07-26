@@ -16,7 +16,8 @@ class DownloadController extends GetxController {
   VideoSearchList? searchResult;
   final YoutubeExplode youtube = YoutubeExplode();
   final MusicPlayerService player = MusicPlayerService();
-  ExtendedVideo? currentVideo;
+  Rx<ExtendedVideo>? currentVideo;
+  Rx<bool> sliderShown = false.obs;
 
   DownloadController() {
     player.getPositionStream().listen((position) {
@@ -42,15 +43,16 @@ class DownloadController extends GetxController {
 /////////////////////////////////////////////
   void play(ExtendedVideo video) async {
     if (currentVideo != null) {
-      if (currentVideo!.url != video.url) {
-        currentVideo!.isPlaying.value = false;
+      if (currentVideo!.value.url != video.url) {
+        currentVideo!.value.isPlaying.value = false;
       }
     }
     video.isPlaying.value = true;
+    sliderShown.value = true;
 
     String url = await getMusicUrl(video);
     await player.playMusicFromUrl(url);
-    currentVideo = video;
+    currentVideo?.value = video;
   }
 /////////////////////////////////////////////
 
@@ -92,6 +94,7 @@ class DownloadController extends GetxController {
   void stop(ExtendedVideo video) async {
     await player.stop(video);
     video.isPlaying.value = false;
+    sliderShown.value = false;
   }
 
 /////////////////////////////////////////////

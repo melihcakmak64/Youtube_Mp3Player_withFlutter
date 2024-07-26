@@ -128,11 +128,8 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildSlider() {
-    return Obx(
-      () {
-        if (controller.currentVideo != null &&
-            controller.currentVideo!.isPlaying.value) {
-          return Positioned(
+    return Obx(() => controller.sliderShown.value
+        ? Positioned(
             bottom: 0,
             left: 0,
             right: 0,
@@ -158,17 +155,13 @@ class _ResultPageState extends State<ResultPage> {
                 ),
               ],
             ),
-          );
-        } else {
-          return SizedBox();
-        }
-      },
-    );
+          )
+        : SizedBox.shrink());
   }
+}
 
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
+String _formatDuration(Duration duration) {
+  final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return '$minutes:$seconds';
 }

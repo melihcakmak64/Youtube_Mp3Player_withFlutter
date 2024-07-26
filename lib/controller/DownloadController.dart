@@ -49,10 +49,10 @@ class DownloadController extends GetxController {
     }
     video.isPlaying.value = true;
     sliderShown.value = true;
+    currentVideo = video.obs;
 
     String url = await getMusicUrl(video);
     await player.playMusicFromUrl(url);
-    currentVideo?.value = video;
   }
 /////////////////////////////////////////////
 

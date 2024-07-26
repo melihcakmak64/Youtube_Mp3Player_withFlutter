@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/model/newModel.dart';
+import 'package:music_player/view/widgets/musicCard.dart';
+import 'package:music_player/view/widgets/slider.dart';
 import '../controller/DownloadController.dart';
 
 class ResultPage extends StatefulWidget {
@@ -27,6 +29,10 @@ class _ResultPageState extends State<ResultPage> {
   void dispose() {
     scrollController.removeListener(_scrollListener);
     controller.getList().clear();
+    if (controller.currentVideo != null) {
+      controller.stop(controller.currentVideo!.value);
+    }
+
     super.dispose();
   }
 
@@ -56,112 +62,19 @@ class _ResultPageState extends State<ResultPage> {
                     itemCount: controller.getList().length,
                     itemBuilder: (context, index) {
                       var video = controller.getList()[index];
-                      return getCard(video);
+                      return MusicCard(
+                        controller: controller,
+                        video: video,
+                      );
                     },
                   );
                 }
               },
             ),
           ),
-          _buildSlider()
+          MusicSlider(controller: controller)
         ],
       ),
     );
   }
-
-  Card getCard(ExtendedVideo video) {
-    final duration = video.duration;
-    final hours = duration?.inHours ?? 0;
-    final minutes = duration?.inMinutes.remainder(60) ?? 0;
-    final seconds = duration?.inSeconds.remainder(60) ?? 0;
-
-    final formattedDuration = hours > 0
-        ? '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
-        : '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-
-    return Card(
-      child: ListTile(
-        leading: FadeInImage.assetNetwork(
-          placeholder:
-              'assets/placeholder-image.png', // Path to your temporary placeholder image
-          image: video.thumbnails.mediumResUrl,
-          fit: BoxFit.cover,
-        ),
-        title: Text("${video.title} ($formattedDuration)"),
-        trailing: Obx(() {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(
-                  (video.isPlaying.value) ? Icons.stop : Icons.play_arrow,
-                ),
-                onPressed: () {
-                  if (video.isPlaying.value) {
-                    controller.stop(video);
-                  } else {
-                    controller.play(video);
-                  }
-                },
-              ),
-              const SizedBox(width: 8),
-              (video.isDownloading.value)
-                  ? const CircularProgressIndicator()
-                  : (video.isDownloaded.value)
-                      ? IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () async {
-                            await controller.deleteFile(video);
-                          },
-                        )
-                      : IconButton(
-                          icon: const Icon(Icons.download),
-                          onPressed: () async {
-                            await controller.download(video);
-                          },
-                        ),
-            ],
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildSlider() {
-    return Obx(() => controller.sliderShown.value
-        ? Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Slider(
-                  value: controller.currentPosition.value.inSeconds.toDouble(),
-                  max: controller.totalDuration.value.inSeconds.toDouble(),
-                  onChanged: (value) {
-                    controller.player.seek(Duration(seconds: value.toInt()));
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(_formatDuration(controller.currentPosition.value)),
-                      Text(_formatDuration(controller.totalDuration.value)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          )
-        : SizedBox.shrink());
-  }
-}
-
-String _formatDuration(Duration duration) {
-  final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-  final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-  return '$minutes:$seconds';
 }

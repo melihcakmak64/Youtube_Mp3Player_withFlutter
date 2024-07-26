@@ -10,23 +10,36 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:get/get.dart';
 
 class DownloadController extends GetxController {
+  final Rx<Duration> currentPosition = Duration.zero.obs;
+  final Rx<Duration> totalDuration = Duration.zero.obs;
   final RxList<ExtendedVideo> _videoList = <ExtendedVideo>[].obs;
-
   VideoSearchList? searchResult;
   final YoutubeExplode youtube = YoutubeExplode();
   final MusicPlayerService player = MusicPlayerService();
   ExtendedVideo? currentVideo;
 
-  // RxString currentUrl = "".obs;
-  // RxBool isDownloading = false.obs;
+  DownloadController() {
+    player.getPositionStream().listen((position) {
+      currentPosition.value = position;
+    });
 
+    player.getDurationStream().listen((duration) {
+      if (duration != null) {
+        totalDuration.value = duration;
+      }
+    });
+  }
+
+/////////////////////////////////////////////
   Future<String> getMusicUrl(ExtendedVideo video) async {
     StreamManifest manifest =
         await youtube.videos.streamsClient.getManifest(video.url);
     var streamInfo = manifest.audioOnly.withHighestBitrate();
+
     return streamInfo.url.toString();
   }
 
+/////////////////////////////////////////////
   void play(ExtendedVideo video) async {
     if (currentVideo != null) {
       if (currentVideo!.url != video.url) {
@@ -39,6 +52,7 @@ class DownloadController extends GetxController {
     await player.playMusicFromUrl(url);
     currentVideo = video;
   }
+/////////////////////////////////////////////
 
   Future<void> download(ExtendedVideo video) async {
     if (player.isPlaying()) {
@@ -73,11 +87,14 @@ class DownloadController extends GetxController {
     }
   }
 
+/////////////////////////////////////////////
+
   void stop(ExtendedVideo video) async {
     await player.stop(video);
     video.isPlaying.value = false;
   }
 
+/////////////////////////////////////////////
   Future<bool> isDownloaded(String url) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> downloadedVideos =
@@ -85,6 +102,7 @@ class DownloadController extends GetxController {
     return downloadedVideos.contains(url);
   }
 
+/////////////////////////////////////////////
   Future<RxList<ExtendedVideo>> searchVideos(String query) async {
     searchResult = await youtube.search(query);
     searchResult!.forEach((p0) async {
@@ -112,10 +130,12 @@ class DownloadController extends GetxController {
     return _videoList;
   }
 
+/////////////////////////////////////////////
   RxList<ExtendedVideo> getList() {
     return _videoList;
   }
 
+/////////////////////////////////////////////
   Future<void> getNextPage() async {
     searchResult = await searchResult!.nextPage();
     searchResult!.forEach((p0) async {
@@ -141,6 +161,7 @@ class DownloadController extends GetxController {
     });
   }
 
+/////////////////////////////////////////////
   Future<void> _markVideoAsDownloaded(String id) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> downloadedVideos =
@@ -152,6 +173,7 @@ class DownloadController extends GetxController {
     }
   }
 
+/////////////////////////////////////////////
   Future<void> _removeDownloadedVideo(String id) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> downloadedVideos =
@@ -162,6 +184,7 @@ class DownloadController extends GetxController {
     }
   }
 
+/////////////////////////////////////////////
   Future<void> deleteFile(ExtendedVideo video) async {
     var directory = await getExternalStorageDirectory();
     String downloadPath =
@@ -178,11 +201,15 @@ class DownloadController extends GetxController {
     }
   }
 
+/////////////////////////////////////////////
   void _updateVideoAsDownloaded(ExtendedVideo video) {
     video.isDownloaded.value = true;
   }
 
+/////////////////////////////////////////////
   void _updateVideoAsNotDownloaded(ExtendedVideo video) {
     video.isDownloaded.value = false;
   }
+
+  /////////////////////////////////////////////
 }

@@ -17,4 +17,16 @@ class MusicPlayerService {
   bool isPlaying() {
     return audioPlayer.playing;
   }
+
+  Future<void> seek(Duration duration) async {
+    await audioPlayer.seek(duration);
+  }
+
+  Stream<Duration> getPositionStream() {
+    return audioPlayer.positionStream;
+  }
+
+  Stream<Duration?> getDurationStream() {
+    return audioPlayer.durationStream;
+  }
 }

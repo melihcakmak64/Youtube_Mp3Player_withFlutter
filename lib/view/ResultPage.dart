@@ -43,23 +43,28 @@ class _ResultPageState extends State<ResultPage> {
       appBar: AppBar(
         title: const Text('Results'),
       ),
-      body: Center(
-        child: Obx(
-          () {
-            if (controller.getList().isEmpty) {
-              return const CircularProgressIndicator();
-            } else {
-              return ListView.builder(
-                controller: scrollController,
-                itemCount: controller.getList().length,
-                itemBuilder: (context, index) {
-                  var video = controller.getList()[index];
-                  return getCard(video);
-                },
-              );
-            }
-          },
-        ),
+      body: Stack(
+        children: [
+          Center(
+            child: Obx(
+              () {
+                if (controller.getList().isEmpty) {
+                  return const CircularProgressIndicator();
+                } else {
+                  return ListView.builder(
+                    controller: scrollController,
+                    itemCount: controller.getList().length,
+                    itemBuilder: (context, index) {
+                      var video = controller.getList()[index];
+                      return getCard(video);
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+          _buildSlider()
+        ],
       ),
     );
   }
@@ -120,5 +125,50 @@ class _ResultPageState extends State<ResultPage> {
         }),
       ),
     );
+  }
+
+  Widget _buildSlider() {
+    return Obx(
+      () {
+        if (controller.currentVideo != null &&
+            controller.currentVideo!.isPlaying.value) {
+          return Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Slider(
+                  value: controller.currentPosition.value.inSeconds.toDouble(),
+                  max: controller.totalDuration.value.inSeconds.toDouble(),
+                  onChanged: (value) {
+                    controller.player.seek(Duration(seconds: value.toInt()));
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_formatDuration(controller.currentPosition.value)),
+                      Text(_formatDuration(controller.totalDuration.value)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return SizedBox();
+        }
+      },
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 }

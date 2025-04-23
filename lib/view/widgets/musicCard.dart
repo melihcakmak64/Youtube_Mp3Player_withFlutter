@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_player/controller/DownloadController.dart';
-import 'package:music_player/model/newModel.dart';
+import 'package:youtube_downloader/controller/DownloadController.dart';
+import 'package:youtube_downloader/model/newModel.dart';
 
 class MusicCard extends StatelessWidget {
   final ExtendedVideo video;
   final DownloadController
-      controller; // Assuming you have a controller to manage play, stop, download, delete operations
+  controller; // Assuming you have a controller to manage play, stop, download, delete operations
 
   MusicCard({required this.video, required this.controller});
 
@@ -17,9 +17,10 @@ class MusicCard extends StatelessWidget {
     final minutes = duration?.inMinutes.remainder(60) ?? 0;
     final seconds = duration?.inSeconds.remainder(60) ?? 0;
 
-    final formattedDuration = hours > 0
-        ? '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
-        : '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final formattedDuration =
+        hours > 0
+            ? '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
+            : '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 
     return Card(
       child: ListTile(
@@ -50,18 +51,18 @@ class MusicCard extends StatelessWidget {
               (video.isDownloading.value)
                   ? const CircularProgressIndicator()
                   : (video.isDownloaded.value)
-                      ? IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () async {
-                            await controller.deleteFile(video);
-                          },
-                        )
-                      : IconButton(
-                          icon: const Icon(Icons.download),
-                          onPressed: () async {
-                            await controller.download(video);
-                          },
-                        ),
+                  ? IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      await controller.deleteFile(video);
+                    },
+                  )
+                  : IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () async {
+                      await controller.download(video);
+                    },
+                  ),
             ],
           );
         }),

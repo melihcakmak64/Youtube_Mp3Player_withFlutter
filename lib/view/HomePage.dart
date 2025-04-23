@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/view/ResultPage.dart';
+
+import 'package:youtube_downloader/view/ResultPage.dart';
 
 class HomePage extends StatelessWidget {
   final TextEditingController searchController = TextEditingController();
@@ -7,9 +8,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Youtube Downloader'),
-      ),
+      appBar: AppBar(title: const Text('Youtube Downloader')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -17,13 +16,12 @@ class HomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
-                  child: Container(
-                child: Image.asset("assets/youtube.png"),
-                width: 300,
-              )),
-              const SizedBox(
-                height: 50,
+                child: Container(
+                  child: Image.asset("assets/youtube.png"),
+                  width: 300,
+                ),
               ),
+              const SizedBox(height: 50),
               TextField(
                 controller: searchController,
                 decoration: const InputDecoration(

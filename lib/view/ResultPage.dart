@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_player/model/newModel.dart';
-import 'package:music_player/view/widgets/musicCard.dart';
-import 'package:music_player/view/widgets/slider.dart';
+import 'package:youtube_downloader/view/widgets/musicCard.dart';
+import 'package:youtube_downloader/view/widgets/slider.dart';
 import '../controller/DownloadController.dart';
 
 class ResultPage extends StatefulWidget {
@@ -46,33 +45,26 @@ class _ResultPageState extends State<ResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Results'),
-      ),
+      appBar: AppBar(title: const Text('Results')),
       body: Stack(
         children: [
           Center(
-            child: Obx(
-              () {
-                if (controller.getList().isEmpty) {
-                  return const CircularProgressIndicator();
-                } else {
-                  return ListView.builder(
-                    controller: scrollController,
-                    itemCount: controller.getList().length,
-                    itemBuilder: (context, index) {
-                      var video = controller.getList()[index];
-                      return MusicCard(
-                        controller: controller,
-                        video: video,
-                      );
-                    },
-                  );
-                }
-              },
-            ),
+            child: Obx(() {
+              if (controller.getList().isEmpty) {
+                return const CircularProgressIndicator();
+              } else {
+                return ListView.builder(
+                  controller: scrollController,
+                  itemCount: controller.getList().length,
+                  itemBuilder: (context, index) {
+                    var video = controller.getList()[index];
+                    return MusicCard(controller: controller, video: video);
+                  },
+                );
+              }
+            }),
           ),
-          MusicSlider(controller: controller)
+          MusicSlider(controller: controller),
         ],
       ),
     );

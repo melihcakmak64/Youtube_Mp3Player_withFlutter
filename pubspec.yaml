@@ -32,8 +32,8 @@ dependencies:
     sdk: flutter
 
   get: ^4.7.2
-  just_audio: ^0.10.0
-  youtube_explode_dart: ^2.4.0
+  just_audio: ^0.10.4
+  youtube_explode_dart: ^2.5.2
   permission_handler: ^12.0.0+1
   path_provider: ^2.1.5
   shared_preferences: ^2.5.3

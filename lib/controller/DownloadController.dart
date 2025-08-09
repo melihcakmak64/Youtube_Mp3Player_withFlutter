@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_downloader/model/newModel.dart';
 import 'package:youtube_downloader/services/MusicPlayerService.dart';
@@ -12,11 +13,13 @@ import 'package:youtube_downloader/services/PermissionHandler.dart';
 class DownloadController extends GetxController {
   final Rx<Duration> currentPosition = Duration.zero.obs;
   final Rx<Duration> totalDuration = Duration.zero.obs;
-  final RxList<ExtendedVideo> _videoList = <ExtendedVideo>[].obs;
+  final RxList<ResponseModel> _videoList = <ResponseModel>[].obs;
   VideoSearchList? searchResult;
-  final YoutubeExplode youtube = YoutubeExplode();
+  //  final YoutubeExplode youtube = YoutubeExplode();
   final MusicPlayerService player = MusicPlayerService();
-  Rx<ExtendedVideo?> currentVideo = Rx<ExtendedVideo?>(null);
+  Rx<ResponseModel?> currentVideo = Rx<ResponseModel?>(null);
+
+  YoutubeExplodeService youtubeExplodeService = YoutubeExplodeService();
   RxBool sliderShown = false.obs;
 
   DownloadController() {
@@ -31,13 +34,7 @@ class DownloadController extends GetxController {
     });
   }
 
-  Future<String> getMusicUrl(ExtendedVideo video) async {
-    final manifest = await youtube.videos.streamsClient.getManifest(video.url);
-    final streamInfo = manifest.audioOnly.withHighestBitrate();
-    return streamInfo.url.toString();
-  }
-
-  void play(ExtendedVideo video) async {
+  void play(ResponseModel video) async {
     if (currentVideo.value != null && currentVideo.value!.url != video.url) {
       _updateVideo(currentVideo.value!, isPlaying: false);
     }
@@ -46,11 +43,11 @@ class DownloadController extends GetxController {
     sliderShown.value = true;
     currentVideo.value = video;
 
-    final url = await getMusicUrl(video);
+    final url = await youtubeExplodeService.getMusicStreamUrl(video.url);
     await player.playMusicFromUrl(url);
   }
 
-  Future<void> download(ExtendedVideo video) async {
+  Future<void> download(ResponseModel video) async {
     if (player.isPlaying()) {
       player.stop(video);
     }
@@ -62,11 +59,7 @@ class DownloadController extends GetxController {
     if (status) {
       _updateVideo(video, isDownloading: true);
 
-      final manifest = await youtube.videos.streamsClient.getManifest(
-        video.url,
-      );
-      final streamInfo = manifest.audioOnly.withHighestBitrate();
-      final stream = youtube.videos.streamsClient.get(streamInfo);
+      final stream = await youtubeExplodeService.getMusicStream(video.url);
 
       final directory = await getExternalStorageDirectory();
       final downloadPath =
@@ -88,7 +81,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  void stop(ExtendedVideo video) async {
+  void stop(ResponseModel video) async {
     await player.stop(video);
     _updateVideo(video, isPlaying: false);
     sliderShown.value = false;
@@ -100,50 +93,27 @@ class DownloadController extends GetxController {
     return downloadedVideos.contains(url);
   }
 
-  Future<RxList<ExtendedVideo>> searchVideos(String query) async {
-    searchResult = await youtube.search(query);
-    for (var p0 in searchResult!) {
-      final video = ExtendedVideo(
-        id: VideoId(p0.id.value),
-        title: p0.title,
-        author: p0.author,
-        channelId: ChannelId(p0.channelId.value),
-        uploadDate: p0.uploadDate,
-        uploadDateRaw: p0.uploadDateRaw,
-        publishDate: p0.publishDate,
-        description: p0.description,
-        duration: p0.duration,
-        thumbnails: p0.thumbnails,
-        keywords: p0.keywords ?? [],
-        engagement: p0.engagement,
-        isLive: p0.isLive,
-        url: p0.url,
-        isDownloaded: await isDownloaded(p0.url),
-      );
-      _videoList.add(video);
+  Future<RxList<ResponseModel>> searchVideos(String query) async {
+    final result = await youtubeExplodeService.searchVideos(query);
+    for (var e in result) {
+      e.copyWith(isDownloaded: await isDownloaded(e.url));
     }
+    _videoList.addAll(result);
     return _videoList;
   }
 
-  RxList<ExtendedVideo> getList() => _videoList;
+  RxList<ResponseModel> getList() => _videoList;
 
   Future<void> getNextPage() async {
     searchResult = await searchResult!.nextPage();
     for (var p0 in searchResult!) {
-      final video = ExtendedVideo(
+      final video = ResponseModel(
         id: VideoId(p0.id.value),
         title: p0.title,
-        author: p0.author,
-        channelId: ChannelId(p0.channelId.value),
-        uploadDate: p0.uploadDate,
-        uploadDateRaw: p0.uploadDateRaw,
         publishDate: p0.publishDate,
         description: p0.description,
         duration: p0.duration,
         thumbnails: p0.thumbnails,
-        keywords: p0.keywords ?? [],
-        engagement: p0.engagement,
-        isLive: p0.isLive,
         url: p0.url,
         isDownloaded: await isDownloaded(p0.url),
       );
@@ -169,7 +139,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  Future<void> deleteFile(ExtendedVideo video) async {
+  Future<void> deleteFile(ResponseModel video) async {
     final directory = await getExternalStorageDirectory();
     final downloadPath =
         '${directory!.parent.parent.parent.parent.path}/Download/MusicFolder/${video.title}.mp3';
@@ -186,7 +156,7 @@ class DownloadController extends GetxController {
   }
 
   void _updateVideo(
-    ExtendedVideo video, {
+    ResponseModel video, {
     bool? isDownloaded,
     bool? isPlaying,
     bool? isDownloading,

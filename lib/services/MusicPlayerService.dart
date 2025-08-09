@@ -9,7 +9,7 @@ class MusicPlayerService {
     audioPlayer.play();
   }
 
-  Future<void> stop(ExtendedVideo video) async {
+  Future<void> stop(ResponseModel video) async {
     video.isPlaying = false;
     await audioPlayer.stop();
   }

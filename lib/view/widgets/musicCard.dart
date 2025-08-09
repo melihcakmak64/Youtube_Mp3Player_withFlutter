@@ -4,7 +4,7 @@ import 'package:youtube_downloader/controller/DownloadController.dart';
 import 'package:youtube_downloader/model/newModel.dart';
 
 class MusicCard extends StatelessWidget {
-  final ExtendedVideo video;
+  final ResponseModel video;
   final DownloadController
   controller; // Assuming you have a controller to manage play, stop, download, delete operations
 

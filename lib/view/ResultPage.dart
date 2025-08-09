@@ -46,26 +46,32 @@ class _ResultPageState extends State<ResultPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Results')),
-      body: Stack(
-        children: [
-          Center(
-            child: Obx(() {
-              if (controller.getList().isEmpty) {
-                return const CircularProgressIndicator();
-              } else {
-                return ListView.builder(
-                  controller: scrollController,
-                  itemCount: controller.getList().length,
-                  itemBuilder: (context, index) {
-                    var video = controller.getList()[index];
-                    return MusicCard(controller: controller, video: video);
-                  },
-                );
-              }
-            }),
-          ),
-          MusicSlider(controller: controller),
-        ],
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Center(
+              child: Obx(() {
+                if (controller.getList().isEmpty) {
+                  return const CircularProgressIndicator();
+                } else {
+                  return ListView.builder(
+                    controller: scrollController,
+                    itemCount: controller.getList().length,
+                    itemBuilder: (context, index) {
+                      var video = controller.getList()[index];
+                      return MusicCard(
+                        key: ValueKey(video.id),
+                        controller: controller,
+                        video: video,
+                      );
+                    },
+                  );
+                }
+              }),
+            ),
+            MusicSlider(controller: controller),
+          ],
+        ),
       ),
     );
   }

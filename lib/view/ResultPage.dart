@@ -60,8 +60,8 @@ class _ResultPageState extends State<ResultPage> {
                     itemBuilder: (context, index) {
                       var video = controller.getList()[index];
                       return MusicCard(
-                        key: ValueKey(video.id),
-                        controller: controller,
+                        key: ValueKey(video.model.id),
+
                         video: video,
                       );
                     },

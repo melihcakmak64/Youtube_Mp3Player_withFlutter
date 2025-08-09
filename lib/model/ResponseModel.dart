@@ -9,9 +9,6 @@ class ResponseModel extends Equatable {
   final String description;
   final Duration? duration;
   final ThumbnailSet thumbnails;
-  bool isDownloaded;
-  bool isPlaying;
-  bool isDownloading;
   final String url;
 
   ResponseModel({
@@ -22,9 +19,6 @@ class ResponseModel extends Equatable {
     required this.description,
     this.duration,
     required this.thumbnails,
-    this.isDownloaded = false,
-    this.isPlaying = false,
-    this.isDownloading = false,
     required this.url,
   });
 
@@ -40,9 +34,6 @@ class ResponseModel extends Equatable {
       description: description,
       duration: duration,
       thumbnails: thumbnails,
-      isDownloaded: isDownloaded ?? this.isDownloaded,
-      isPlaying: isPlaying ?? this.isPlaying,
-      isDownloading: isDownloading ?? this.isDownloading,
       url: url,
     );
   }
@@ -55,9 +46,6 @@ class ResponseModel extends Equatable {
     description,
     duration,
     thumbnails,
-    isDownloaded,
-    isPlaying,
-    isDownloading,
     url,
   ];
 }

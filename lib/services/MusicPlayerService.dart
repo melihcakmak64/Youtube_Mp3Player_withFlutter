@@ -1,5 +1,5 @@
 import 'package:just_audio/just_audio.dart';
-import 'package:youtube_downloader/model/newModel.dart';
+import 'package:youtube_downloader/model/ResponseModel.dart';
 
 class MusicPlayerService {
   final AudioPlayer audioPlayer = AudioPlayer();
@@ -10,7 +10,6 @@ class MusicPlayerService {
   }
 
   Future<void> stop(ResponseModel video) async {
-    video.isPlaying = false;
     await audioPlayer.stop();
   }
 

@@ -1,4 +1,4 @@
-import 'package:youtube_downloader/model/newModel.dart';
+import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class YoutubeExplodeService {

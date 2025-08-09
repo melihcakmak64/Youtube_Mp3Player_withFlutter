@@ -17,10 +17,9 @@ class MusicCard extends StatelessWidget {
     final minutes = duration?.inMinutes.remainder(60) ?? 0;
     final seconds = duration?.inSeconds.remainder(60) ?? 0;
 
-    final formattedDuration =
-        hours > 0
-            ? '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
-            : '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final formattedDuration = hours > 0
+        ? '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
+        : '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 
     return Card(
       child: ListTile(
@@ -31,39 +30,37 @@ class MusicCard extends StatelessWidget {
           fit: BoxFit.cover,
         ),
         title: Text("${video.title} ($formattedDuration)"),
-        trailing: Obx(() {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon((video.isPlaying) ? Icons.stop : Icons.play_arrow),
-                onPressed: () {
-                  if (video.isPlaying) {
-                    controller.stop(video);
-                  } else {
-                    controller.play(video);
-                  }
-                },
-              ),
-              const SizedBox(width: 8),
-              (video.isDownloading)
-                  ? const CircularProgressIndicator()
-                  : (video.isDownloaded)
-                  ? IconButton(
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon((video.isPlaying) ? Icons.stop : Icons.play_arrow),
+              onPressed: () {
+                if (video.isPlaying) {
+                  controller.stop(video);
+                } else {
+                  controller.play(video);
+                }
+              },
+            ),
+            const SizedBox(width: 8),
+            (video.isDownloading)
+                ? const CircularProgressIndicator()
+                : (video.isDownloaded)
+                ? IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () async {
                       await controller.deleteFile(video);
                     },
                   )
-                  : IconButton(
+                : IconButton(
                     icon: const Icon(Icons.download),
                     onPressed: () async {
                       await controller.download(video);
                     },
                   ),
-            ],
-          );
-        }),
+          ],
+        ),
       ),
     );
   }

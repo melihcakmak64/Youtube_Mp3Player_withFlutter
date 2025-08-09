@@ -8,7 +8,7 @@ class MusicCard extends StatelessWidget {
   final DownloadController
   controller; // Assuming you have a controller to manage play, stop, download, delete operations
 
-  MusicCard({required this.video, required this.controller});
+  const MusicCard({super.key, required this.video, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +36,9 @@ class MusicCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(
-                  (video.isPlaying.value) ? Icons.stop : Icons.play_arrow,
-                ),
+                icon: Icon((video.isPlaying) ? Icons.stop : Icons.play_arrow),
                 onPressed: () {
-                  if (video.isPlaying.value) {
+                  if (video.isPlaying) {
                     controller.stop(video);
                   } else {
                     controller.play(video);
@@ -48,9 +46,9 @@ class MusicCard extends StatelessWidget {
                 },
               ),
               const SizedBox(width: 8),
-              (video.isDownloading.value)
+              (video.isDownloading)
                   ? const CircularProgressIndicator()
-                  : (video.isDownloaded.value)
+                  : (video.isDownloaded)
                   ? IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () async {

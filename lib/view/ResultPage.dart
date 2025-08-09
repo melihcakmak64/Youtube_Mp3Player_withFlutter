@@ -28,8 +28,8 @@ class _ResultPageState extends State<ResultPage> {
   void dispose() {
     scrollController.removeListener(_scrollListener);
     controller.getList().clear();
-    if (controller.currentVideo != null) {
-      controller.stop(controller.currentVideo!.value);
+    if (controller.currentVideo.value != null) {
+      controller.stop(controller.currentVideo.value!);
     }
 
     super.dispose();

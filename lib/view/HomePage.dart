@@ -5,6 +5,8 @@ import 'package:youtube_downloader/view/ResultPage.dart';
 class HomePage extends StatelessWidget {
   final TextEditingController searchController = TextEditingController();
 
+  HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,9 +18,9 @@ class HomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
-                child: Container(
-                  child: Image.asset("assets/youtube.png"),
+                child: SizedBox(
                   width: 300,
+                  child: Image.asset("assets/youtube.png"),
                 ),
               ),
               const SizedBox(height: 50),

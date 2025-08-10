@@ -1,68 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/DownloadController.dart';
+import 'package:youtube_downloader/controller/MusicPlayerController.dart';
 import 'package:youtube_downloader/controller/ResponseState.dart';
-import 'package:youtube_downloader/model/ResponseModel.dart';
+import 'package:youtube_downloader/helper/helper.dart';
 
-class MusicCard extends StatelessWidget {
+class MusicCard extends ConsumerWidget {
   final ResponseState video;
+
   const MusicCard({super.key, required this.video});
 
   @override
-  Widget build(BuildContext context) {
-    final DownloadController controller = Get.find();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final downloadNotifier = ref.read(downloadProvider.notifier);
+    final musicPlayerNotifier = ref.read(musicPlayerProvider.notifier);
     final duration = video.model.duration;
-    final hours = duration?.inHours ?? 0;
-    final minutes = duration?.inMinutes.remainder(60) ?? 0;
-    final seconds = duration?.inSeconds.remainder(60) ?? 0;
+    final formattedDuration = formatDuration(duration ?? Duration.zero);
+    final isPlaying = ref.watch(isVideoPlayingProvider(video.model.url));
 
-    final formattedDuration = hours > 0
-        ? '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
-        : '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    print("deneme");
+    print(key);
+
     return Card(
       child: ListTile(
         leading: FadeInImage.assetNetwork(
-          placeholder:
-              'assets/placeholder-image.png', // Path to your temporary placeholder image
+          placeholder: 'assets/placeholder-image.png',
           image: video.model.thumbnails.mediumResUrl,
           fit: BoxFit.cover,
         ),
         title: Text("${video.model.title} ($formattedDuration)"),
-        trailing: Obx(() {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(
-                  (video.isPlaying.value) ? Icons.stop : Icons.play_arrow,
-                ),
-                onPressed: () {
-                  if (video.isPlaying.value) {
-                    controller.stop(video);
-                  } else {
-                    controller.play(video);
-                  }
-                },
-              ),
-              const SizedBox(width: 8),
-              (video.isDownloading.value)
-                  ? const CircularProgressIndicator()
-                  : (video.isDownloaded.value)
-                  ? IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await controller.deleteFile(video);
-                      },
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.download),
-                      onPressed: () async {
-                        await controller.download(video);
-                      },
-                    ),
-            ],
-          );
-        }),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Play/Stop Button
+            IconButton(
+              icon: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
+              onPressed: () {
+                if (isPlaying) {
+                  musicPlayerNotifier.stop();
+                } else {
+                  musicPlayerNotifier.play(video.model);
+                }
+              },
+            ),
+
+            const SizedBox(width: 8),
+
+            // Download/Delete Button
+            Builder(
+              builder: (context) {
+                if (video.isDownloading.value) {
+                  return const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                } else if (video.isDownloaded.value) {
+                  return IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      await downloadNotifier.deleteFile(video);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Dosya silindi')),
+                      );
+                    },
+                  );
+                } else {
+                  return IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () async {
+                      await downloadNotifier.download(video);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('İndirme başarılı')),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

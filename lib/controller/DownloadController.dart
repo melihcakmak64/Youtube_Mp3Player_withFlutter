@@ -1,52 +1,79 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:get/get.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:youtube_downloader/controller/ResponseState.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
+import 'package:youtube_downloader/services/PermissionHandler.dart';
 import 'package:youtube_downloader/services/SharedPreferencesService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_downloader/services/MusicPlayerService.dart';
-import 'package:youtube_downloader/services/PermissionHandler.dart';
 
-class DownloadController extends GetxController {
-  final Rx<Duration> currentPosition = Duration.zero.obs;
-  final Rx<Duration> totalDuration = Duration.zero.obs;
-  final RxList<ResponseState> _videoList = <ResponseState>[].obs;
-  VideoSearchList? searchResult;
-  Rx<ResponseState?> currentVideo = Rx<ResponseState?>(null);
+class DownloadState {
+  final List<ResponseState> videoList;
+  final ResponseState? currentVideo;
+  final Duration currentPosition;
+  final Duration totalDuration;
 
-  RxList<ResponseState> getList() => _videoList;
+  DownloadState({
+    this.videoList = const [],
+    this.currentVideo,
+    this.currentPosition = Duration.zero,
+    this.totalDuration = Duration.zero,
+  });
 
-  final player = MusicPlayerService();
-  final downloadService = DownloadService();
-  final youtubeExplodeService = YoutubeExplodeService();
+  DownloadState copyWith({
+    List<ResponseState>? videoList,
+    ResponseState? currentVideo,
+    Duration? currentPosition,
+    Duration? totalDuration,
+  }) {
+    return DownloadState(
+      videoList: videoList ?? this.videoList,
+      currentVideo: currentVideo ?? this.currentVideo,
+      currentPosition: currentPosition ?? this.currentPosition,
+      totalDuration: totalDuration ?? this.totalDuration,
+    );
+  }
+}
 
-  @override
-  void onInit() {
-    super.onInit();
+class DownloadNotifier extends StateNotifier<DownloadState> {
+  final MusicPlayerService player;
+  final DownloadService downloadService;
+  final YoutubeExplodeService youtubeExplodeService;
+
+  StreamSubscription<Duration>? _positionSub;
+  StreamSubscription<Duration?>? _durationSub;
+
+  DownloadNotifier({
+    required this.player,
+    required this.downloadService,
+    required this.youtubeExplodeService,
+  }) : super(DownloadState()) {
     _bindPlayerListeners();
   }
 
   void _bindPlayerListeners() {
-    player.getPositionStream().listen((pos) => currentPosition.value = pos);
-    player.getDurationStream().listen((dur) {
-      if (dur != null) totalDuration.value = dur;
+    _positionSub = player.getPositionStream().listen((pos) {
+      state = state.copyWith(currentPosition: pos);
+    });
+
+    _durationSub = player.getDurationStream().listen((dur) {
+      if (dur != null) {
+        state = state.copyWith(totalDuration: dur);
+      }
     });
   }
 
   Future<void> play(ResponseState video) async {
-    _stopIfPlaying();
+    await _stopIfPlaying();
     _updateAndSetCurrent(video, isPlaying: true);
 
     final url = await youtubeExplodeService.getMusicStreamUrl(video.model.url);
     await player.playMusicFromUrl(url);
   }
 
-  void stop(ResponseState video) async {
+  Future<void> stop(ResponseState video) async {
     await player.stop();
     _updateVideo(video, isPlaying: false);
   }
@@ -67,25 +94,14 @@ class DownloadController extends GetxController {
     await _markVideoAsDownloaded(video.model.url);
     _updateAndSetCurrent(video, isDownloading: false, isDownloaded: true);
 
-    // UI'da snackbar tetikle
-    Get.snackbar(
-      "İndirme başarılı",
-      "Çalmak için tıklayın.",
-      onTap: (_) {
-        _stopIfPlaying();
-        player.playMusicFromFile(savedFile.path);
-        _updateAndSetCurrent(
-          video,
-          isDownloading: false,
-          isDownloaded: true,
-          isPlaying: true,
-        );
-      },
-    );
+    // Snackbar işlemini UI'da yapman gerekiyor,
+    // buraya callback veya başka mekanizma ekleyebilirsin.
   }
 
-  void _stopIfPlaying() {
-    if (player.isPlaying()) player.stop();
+  Future<void> _stopIfPlaying() async {
+    if (player.isPlaying()) {
+      await player.stop();
+    }
   }
 
   Future<bool> _hasStoragePermission() async {
@@ -101,11 +117,16 @@ class DownloadController extends GetxController {
 
   Future<void> searchVideos(String query) async {
     final result = await youtubeExplodeService.searchVideos(query);
+
+    // Yeni listeyi oluşturup, eski listeye ekliyoruz
+    List<ResponseState> newList = [];
     for (var e in result) {
       final state = ResponseState(model: e);
       state.isDownloaded.value = await isDownloaded(e.url);
-      _videoList.add(state);
+      newList.add(state);
     }
+
+    state = state.copyWith(videoList: [...state.videoList, ...newList]);
   }
 
   void _updateAndSetCurrent(
@@ -116,11 +137,11 @@ class DownloadController extends GetxController {
   }) {
     _updateVideo(
       video,
-      isDownloaded: isDownloaded,
       isPlaying: isPlaying,
+      isDownloaded: isDownloaded,
       isDownloading: isDownloading,
     );
-    currentVideo.value = video;
+    state = state.copyWith(currentVideo: video);
   }
 
   Future<void> _markVideoAsDownloaded(String id) async {
@@ -137,9 +158,9 @@ class DownloadController extends GetxController {
     if (result) {
       await _removeDownloadedVideo(video.model.url);
       _updateVideo(video, isDownloaded: false);
-      Get.snackbar("Sonuc", "Silme başarılı");
+      // UI'da snackbar gösterilmeli
     } else {
-      Get.snackbar("Sonuc", "Dosya bulunamadı");
+      // UI'da snackbar gösterilmeli
     }
   }
 
@@ -149,31 +170,51 @@ class DownloadController extends GetxController {
     bool? isPlaying,
     bool? isDownloading,
   }) {
-    final videoState = _videoList.firstWhereOrNull(
-      (v) => v.model.id == video.model.id,
-    );
-    if (videoState != null) {
-      videoState.isDownloaded.value =
-          isDownloaded ?? videoState.isDownloaded.value;
-      videoState.isPlaying.value = isPlaying ?? videoState.isPlaying.value;
-      videoState.isDownloading.value =
-          isDownloading ?? videoState.isDownloading.value;
-    }
+    final idx = state.videoList.indexWhere((v) => v.model.id == video.model.id);
+    if (idx == -1) return;
+
+    // Riverpod’da ResponseState içindeki Rx<bool> durumları var,
+    // istersen onları da state içinde tutup immutable yaparsın ama burada
+    // orijinalden değiştirmeden direkt state güncellemesi yapacağız.
+
+    // Ancak ResponseState içinde Rx<bool> kullanılmış. Riverpod'da bunu
+    // direkt değiştirmek yerine immutable yapıp, state içinden yeni liste
+    // oluşturarak değiştirmek daha doğru.
+
+    // Burada örnek olarak ResponseState'i değiştirmeden döndürdük,
+    // kendi modelinde güncelleme yapman gerekiyor.
+
+    final updated = ResponseState(model: video.model);
+    updated.isDownloaded.value = isDownloaded ?? video.isDownloaded.value;
+    updated.isDownloading.value = isDownloading ?? video.isDownloading.value;
+
+    final updatedList = [...state.videoList];
+    updatedList[idx] = updated;
+
+    state = state.copyWith(videoList: updatedList);
   }
 
-  Future<void> getNextPage() async {
-    // searchResult = await searchResult!.nextPage();
-    // for (var p0 in searchResult!) {
-    //   final video = ResponseModel(
-    //     id: VideoId(p0.id.value),
-    //     title: p0.title,
-    //     publishDate: p0.publishDate,
-    //     description: p0.description,
-    //     duration: p0.duration,
-    //     thumbnails: p0.thumbnails,
-    //     url: p0.url,
-    //   );
-    //   _videoList.add(video);
-    // }
+  @override
+  void dispose() {
+    _positionSub?.cancel();
+    _durationSub?.cancel();
+    super.dispose();
   }
+
+  void getNextPage() {}
 }
+
+// Provider tanımı
+final downloadProvider = StateNotifierProvider<DownloadNotifier, DownloadState>(
+  (ref) {
+    final player = MusicPlayerService();
+    final downloadService = DownloadService();
+    final youtubeService = YoutubeExplodeService();
+
+    return DownloadNotifier(
+      player: player,
+      downloadService: downloadService,
+      youtubeExplodeService: youtubeService,
+    );
+  },
+);

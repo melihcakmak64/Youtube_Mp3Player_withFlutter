@@ -56,7 +56,7 @@ class DownloadService {
   /// Dosyayı siler
   Future<bool> deleteFile(String fileName) async {
     final path = await getDownloadFolderPath();
-    final file = File('$path/$fileName.mp3');
+    final file = File('$path/${fileName.sanitize()}.mp3');
     if (await file.exists()) {
       await file.delete();
       return true;

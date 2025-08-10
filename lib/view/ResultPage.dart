@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/controller_initializers.dart';
+import 'package:youtube_downloader/controller/VideoListController.dart';
 import 'package:youtube_downloader/view/widgets/MusicCard.dart';
 import 'package:youtube_downloader/view/widgets/Slider.dart';
 

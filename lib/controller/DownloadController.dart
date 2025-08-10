@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
+import 'package:youtube_downloader/services/NotificationService.dart';
 import 'package:youtube_downloader/services/PermissionHandler.dart';
 import 'package:youtube_downloader/services/SharedPreferencesService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
@@ -78,11 +79,17 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         stream: musicData.stream,
         fileName: video.title,
         totalBytes: musicData.totalBytes,
-        onProgress: (progress) {
+        onProgress: (progress) async {
           final current = state[videoId];
           if (current != null) {
             state = {...state, videoId: current.copyWith(progress: progress)};
           }
+          int percent = (progress * 100).toInt();
+          await NotificationService.showDownloadProgress(
+            id: videoId.hashCode,
+            title: video.title,
+            progress: percent,
+          );
         },
       );
 
@@ -97,7 +104,14 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
           progress: 1,
         ),
       };
+      await NotificationService.showDownloadProgress(
+        id: videoId.hashCode,
+        title: video.title,
+        progress: 100,
+      );
     } catch (e) {
+      await NotificationService.cancel(videoId.hashCode);
+
       // Hata durumunda
       state = {
         ...state,
@@ -126,6 +140,8 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         'downloadedVideos',
         info.video.url,
       );
+      // Bildirimi iptal et
+      await NotificationService.cancel(video.url.hashCode);
       state = {
         ...state,
         video.url: info.copyWith(

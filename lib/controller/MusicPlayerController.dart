@@ -81,6 +81,16 @@ class MusicPlayerNotifier extends StateNotifier<MusicPlayerState> {
   }
 }
 
+final musicPlayerProvider =
+    StateNotifierProvider<MusicPlayerNotifier, MusicPlayerState>((ref) {
+      final player = ref.read(musicPlayerServiceProvider);
+      final youtubeService = ref.read(youtubeExplodeServiceProvider);
+      return MusicPlayerNotifier(
+        player: player,
+        youtubeService: youtubeService,
+      );
+    });
+
 // Seçici provider: sadece ilgili videonun oynatılıp oynatılmadığını verir
 final isVideoPlayingProvider = Provider.family<bool, String>((ref, videoUrl) {
   final state = ref.watch(musicPlayerProvider);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/DownloadController.dart';
 import 'package:youtube_downloader/controller/MusicPlayerController.dart';
-import 'package:youtube_downloader/controller/controller_initializers.dart';
+import 'package:youtube_downloader/controller/VideoListController.dart';
 import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 
@@ -26,7 +26,7 @@ class MusicCard extends ConsumerWidget {
           image: video.thumbnails.mediumResUrl,
           fit: BoxFit.cover,
         ),
-        title: Text("${video.title} ($formattedDuration)"),
+        title: Text("${video.title} ($formattedDuration)", maxLines: 3),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -51,9 +51,14 @@ class MusicCard extends ConsumerWidget {
                 if (downloadInfo?.status == DownloadStatus.downloading) {
                   final percent = ((downloadInfo?.progress ?? 0) * 100)
                       .toStringAsFixed(0);
-                  return Text(
-                    "$percent%",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  return Container(
+                    alignment: Alignment.center,
+                    height: 48,
+                    width: 48,
+                    child: Text(
+                      "$percent%",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   );
                 } else if (downloadInfo?.status == DownloadStatus.downloaded) {
                   return IconButton(

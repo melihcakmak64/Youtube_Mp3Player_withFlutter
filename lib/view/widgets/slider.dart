@@ -10,7 +10,6 @@ class MusicSlider extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final musicPlayerState = ref.watch(musicPlayerProvider);
     final musicPlayerNotifier = ref.read(musicPlayerProvider.notifier);
-
     final currentPosition = musicPlayerState.currentPosition;
     final totalDuration = musicPlayerState.totalDuration;
 

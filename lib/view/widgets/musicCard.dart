@@ -18,9 +18,6 @@ class MusicCard extends ConsumerWidget {
     final formattedDuration = formatDuration(duration ?? Duration.zero);
     final isPlaying = ref.watch(isVideoPlayingProvider(video.model.url));
 
-    print("deneme");
-    print(key);
-
     return Card(
       child: ListTile(
         leading: FadeInImage.assetNetwork(

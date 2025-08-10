@@ -1,5 +1,4 @@
 import 'package:just_audio/just_audio.dart';
-import 'package:youtube_downloader/model/ResponseModel.dart';
 
 class MusicPlayerService {
   final AudioPlayer audioPlayer = AudioPlayer();
@@ -9,7 +8,12 @@ class MusicPlayerService {
     audioPlayer.play();
   }
 
-  Future<void> stop(ResponseModel video) async {
+  Future<void> playMusicFromFile(String filePath) async {
+    await audioPlayer.setFilePath(filePath);
+    await audioPlayer.play();
+  }
+
+  Future<void> stop() async {
     await audioPlayer.stop();
   }
 

@@ -5,9 +5,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:youtube_downloader/controller/ResponseState.dart';
+import 'package:youtube_downloader/services/DownloadService.dart';
+import 'package:youtube_downloader/services/SharedPreferencesService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/MusicPlayerService.dart';
 import 'package:youtube_downloader/services/PermissionHandler.dart';
 
@@ -16,79 +17,80 @@ class DownloadController extends GetxController {
   final Rx<Duration> totalDuration = Duration.zero.obs;
   final RxList<ResponseState> _videoList = <ResponseState>[].obs;
   VideoSearchList? searchResult;
-  //  final YoutubeExplode youtube = YoutubeExplode();
-  final MusicPlayerService player = MusicPlayerService();
   Rx<ResponseState?> currentVideo = Rx<ResponseState?>(null);
 
-  YoutubeExplodeService youtubeExplodeService = YoutubeExplodeService();
-  RxBool sliderShown = false.obs;
+  RxList<ResponseState> getList() => _videoList;
 
-  DownloadController() {
-    player.getPositionStream().listen((position) {
-      currentPosition.value = position;
-    });
+  final player = MusicPlayerService();
+  final downloadService = DownloadService();
+  final youtubeExplodeService = YoutubeExplodeService();
 
-    player.getDurationStream().listen((duration) {
-      if (duration != null) {
-        totalDuration.value = duration;
-      }
+  @override
+  void onInit() {
+    super.onInit();
+    _bindPlayerListeners();
+  }
+
+  void _bindPlayerListeners() {
+    player.getPositionStream().listen((pos) => currentPosition.value = pos);
+    player.getDurationStream().listen((dur) {
+      if (dur != null) totalDuration.value = dur;
     });
   }
 
-  void play(ResponseState video) async {
-    if (currentVideo.value != null &&
-        currentVideo.value!.model.url != video.model.url) {
-      _updateVideo(currentVideo.value!, isPlaying: false);
-    }
-
-    _updateVideo(video, isPlaying: true);
-    sliderShown.value = true;
-    currentVideo.value = video;
+  Future<void> play(ResponseState video) async {
+    _stopIfPlaying();
+    _updateAndSetCurrent(video, isPlaying: true);
 
     final url = await youtubeExplodeService.getMusicStreamUrl(video.model.url);
     await player.playMusicFromUrl(url);
   }
 
-  Future<void> download(ResponseState video) async {
-    if (player.isPlaying()) {
-      player.stop(video.model);
-    }
-
-    final status =
-        (await Permission.audio.status.isGranted) ||
-        (await Permission.storage.status.isGranted);
-
-    if (status) {
-      _updateVideo(video, isDownloading: true);
-
-      final stream = await youtubeExplodeService.getMusicStream(
-        video.model.url,
-      );
-
-      final directory = await getExternalStorageDirectory();
-      final downloadPath =
-          '${directory!.parent.parent.parent.parent.path}/Download/MusicFolder';
-      await Directory(downloadPath).create(recursive: true);
-
-      final file = File('$downloadPath/${video.model.title}.mp3');
-      final fileStream = file.openWrite();
-      await stream.pipe(fileStream);
-      await fileStream.flush();
-      await fileStream.close();
-
-      _updateVideo(video, isDownloading: false, isDownloaded: true);
-      await _markVideoAsDownloaded(video.model.url);
-
-      Get.snackbar("Sonuc", "İndirme başarılı");
-    } else {
-      await PermissionHandler.chekPermission();
-    }
+  void stop(ResponseState video) async {
+    await player.stop();
+    _updateVideo(video, isPlaying: false);
   }
 
-  void stop(ResponseState video) async {
-    await player.stop(video.model);
-    _updateVideo(video, isPlaying: false);
-    sliderShown.value = false;
+  Future<void> download(ResponseState video) async {
+    if (!await _hasStoragePermission()) {
+      await PermissionHandler.chekPermission();
+      return;
+    }
+
+    _updateVideo(video, isDownloading: true);
+    final stream = await youtubeExplodeService.getMusicStream(video.model.url);
+    final savedFile = await downloadService.saveMusicStream(
+      stream: stream,
+      fileName: video.model.title,
+    );
+
+    await _markVideoAsDownloaded(video.model.url);
+    _updateAndSetCurrent(video, isDownloading: false, isDownloaded: true);
+
+    // UI'da snackbar tetikle
+    Get.snackbar(
+      "İndirme başarılı",
+      "Çalmak için tıklayın.",
+      onTap: (_) {
+        _stopIfPlaying();
+        player.playMusicFromFile(savedFile.path);
+        _updateAndSetCurrent(
+          video,
+          isDownloading: false,
+          isDownloaded: true,
+          isPlaying: true,
+        );
+      },
+    );
+  }
+
+  void _stopIfPlaying() {
+    if (player.isPlaying()) player.stop();
+  }
+
+  Future<bool> _hasStoragePermission() async {
+    return (await Permission.audio.status.isGranted) ||
+        (await Permission.storage.status.isGranted);
   }
 
   Future<bool> isDownloaded(String url) async {
@@ -106,50 +108,33 @@ class DownloadController extends GetxController {
     }
   }
 
-  RxList<ResponseState> getList() => _videoList;
-
-  Future<void> getNextPage() async {
-    // searchResult = await searchResult!.nextPage();
-    // for (var p0 in searchResult!) {
-    //   final video = ResponseModel(
-    //     id: VideoId(p0.id.value),
-    //     title: p0.title,
-    //     publishDate: p0.publishDate,
-    //     description: p0.description,
-    //     duration: p0.duration,
-    //     thumbnails: p0.thumbnails,
-    //     url: p0.url,
-    //   );
-    //   _videoList.add(video);
-    // }
+  void _updateAndSetCurrent(
+    ResponseState video, {
+    bool? isPlaying,
+    bool? isDownloaded,
+    bool? isDownloading,
+  }) {
+    _updateVideo(
+      video,
+      isDownloaded: isDownloaded,
+      isPlaying: isPlaying,
+      isDownloading: isDownloading,
+    );
+    currentVideo.value = video;
   }
 
   Future<void> _markVideoAsDownloaded(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final downloadedVideos = prefs.getStringList('downloadedVideos') ?? [];
-    if (!downloadedVideos.contains(id)) {
-      downloadedVideos.add(id);
-      await prefs.setStringList('downloadedVideos', downloadedVideos);
-    }
+    await SharedPreferencesService.addFile('downloadedVideos', id);
   }
 
   Future<void> _removeDownloadedVideo(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final downloadedVideos = prefs.getStringList('downloadedVideos') ?? [];
-    if (downloadedVideos.contains(id)) {
-      downloadedVideos.remove(id);
-      await prefs.setStringList('downloadedVideos', downloadedVideos);
-    }
+    await SharedPreferencesService.removeFile('downloadedVideos', id);
   }
 
   Future<void> deleteFile(ResponseState video) async {
-    final directory = await getExternalStorageDirectory();
-    final downloadPath =
-        '${directory!.parent.parent.parent.parent.path}/Download/MusicFolder/${video.model.title}.mp3';
-    final file = File(downloadPath);
+    final result = await downloadService.deleteFile(video.model.title);
 
-    if (await file.exists()) {
-      await file.delete();
+    if (result) {
       await _removeDownloadedVideo(video.model.url);
       _updateVideo(video, isDownloaded: false);
       Get.snackbar("Sonuc", "Silme başarılı");
@@ -174,5 +159,21 @@ class DownloadController extends GetxController {
       videoState.isDownloading.value =
           isDownloading ?? videoState.isDownloading.value;
     }
+  }
+
+  Future<void> getNextPage() async {
+    // searchResult = await searchResult!.nextPage();
+    // for (var p0 in searchResult!) {
+    //   final video = ResponseModel(
+    //     id: VideoId(p0.id.value),
+    //     title: p0.title,
+    //     publishDate: p0.publishDate,
+    //     description: p0.description,
+    //     duration: p0.duration,
+    //     thumbnails: p0.thumbnails,
+    //     url: p0.url,
+    //   );
+    //   _videoList.add(video);
+    // }
   }
 }

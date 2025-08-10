@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/MusicPlayerState.dart';
+import 'package:youtube_downloader/controller/controller_initializers.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/MusicPlayerService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
@@ -79,18 +80,6 @@ class MusicPlayerNotifier extends StateNotifier<MusicPlayerState> {
     super.dispose();
   }
 }
-
-// Ana provider (state notifier)
-final musicPlayerProvider =
-    StateNotifierProvider<MusicPlayerNotifier, MusicPlayerState>((ref) {
-      final player = MusicPlayerService();
-      final youtubeService = YoutubeExplodeService();
-
-      return MusicPlayerNotifier(
-        player: player,
-        youtubeService: youtubeService,
-      );
-    });
 
 // Seçici provider: sadece ilgili videonun oynatılıp oynatılmadığını verir
 final isVideoPlayingProvider = Provider.family<bool, String>((ref, videoUrl) {

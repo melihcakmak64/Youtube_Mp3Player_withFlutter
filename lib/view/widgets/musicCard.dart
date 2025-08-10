@@ -2,30 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/DownloadController.dart';
 import 'package:youtube_downloader/controller/MusicPlayerController.dart';
-import 'package:youtube_downloader/controller/ResponseState.dart';
+import 'package:youtube_downloader/controller/controller_initializers.dart';
 import 'package:youtube_downloader/helper/helper.dart';
+import 'package:youtube_downloader/model/ResponseModel.dart';
 
 class MusicCard extends ConsumerWidget {
-  final ResponseState video;
+  final ResponseModel video;
 
   const MusicCard({super.key, required this.video});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final downloadNotifier = ref.read(downloadProvider.notifier);
+    final downloadNotifier = ref.read(downloadControllerProvider.notifier);
     final musicPlayerNotifier = ref.read(musicPlayerProvider.notifier);
-    final duration = video.model.duration;
+    final duration = video.duration;
     final formattedDuration = formatDuration(duration ?? Duration.zero);
-    final isPlaying = ref.watch(isVideoPlayingProvider(video.model.url));
+    final isPlaying = ref.watch(isVideoPlayingProvider(video.url));
+
+    print("deneme widget build $key");
 
     return Card(
       child: ListTile(
         leading: FadeInImage.assetNetwork(
           placeholder: 'assets/placeholder-image.png',
-          image: video.model.thumbnails.mediumResUrl,
+          image: video.thumbnails.mediumResUrl,
           fit: BoxFit.cover,
         ),
-        title: Text("${video.model.title} ($formattedDuration)"),
+        title: Text("${video.title} ($formattedDuration)"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -36,27 +39,31 @@ class MusicCard extends ConsumerWidget {
                 if (isPlaying) {
                   musicPlayerNotifier.stop();
                 } else {
-                  musicPlayerNotifier.play(video.model);
+                  musicPlayerNotifier.play(video);
                 }
               },
             ),
-
             const SizedBox(width: 8),
 
-            // Download/Delete Button
-            Builder(
-              builder: (context) {
-                if (video.isDownloading.value) {
-                  return const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+            // Progress / Download / Delete kısmı (izole edilmiş)
+            Consumer(
+              builder: (context, ref, _) {
+                print("deneme iç  build $key");
+
+                final downloadInfo = ref.watch(downloadInfoProvider(video.url));
+
+                if (downloadInfo?.status == DownloadStatus.downloading) {
+                  final percent = ((downloadInfo?.progress ?? 0) * 100)
+                      .toStringAsFixed(0);
+                  return Text(
+                    "$percent%",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   );
-                } else if (video.isDownloaded.value) {
+                } else if (downloadInfo?.status == DownloadStatus.downloaded) {
                   return IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () async {
-                      await downloadNotifier.deleteFile(video);
+                      await downloadNotifier.deleteDownload(video);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Dosya silindi')),
                       );
@@ -66,9 +73,9 @@ class MusicCard extends ConsumerWidget {
                   return IconButton(
                     icon: const Icon(Icons.download),
                     onPressed: () async {
-                      await downloadNotifier.download(video);
+                      await downloadNotifier.startDownload(video);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('İndirme başarılı')),
+                        const SnackBar(content: Text('İndirme başlatıldı')),
                       );
                     },
                   );

@@ -11,6 +11,16 @@ class YoutubeExplodeService {
     return streamInfo.url.toString();
   }
 
+  /// Hem stream'i hem de boyut bilgisini döndürür
+  Future<({Stream<List<int>> stream, int totalBytes})> getMusicStreamWithInfo(
+    String url,
+  ) async {
+    final manifest = await youtube.videos.streamsClient.getManifest(url);
+    final streamInfo = manifest.audioOnly.withHighestBitrate();
+    final stream = youtube.videos.streamsClient.get(streamInfo);
+    return (stream: stream, totalBytes: streamInfo.size.totalBytes);
+  }
+
   Future<Stream<List<int>>> getMusicStream(String url) async {
     final manifest = await youtube.videos.streamsClient.getManifest(url);
     final streamInfo = manifest.audioOnly.withHighestBitrate();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/DownloadController.dart';
+import 'package:youtube_downloader/controller/controller_initializers.dart';
 import 'package:youtube_downloader/view/widgets/MusicCard.dart';
 import 'package:youtube_downloader/view/widgets/Slider.dart';
 
@@ -21,7 +22,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     super.initState();
     scrollController = ScrollController();
     // Arama işlemini başlat
-    ref.read(downloadProvider.notifier).searchVideos(widget.searchTerm);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(videoListControllerProvider.notifier)
+          .searchVideos(widget.searchTerm);
+    });
 
     scrollController.addListener(_scrollListener);
   }
@@ -29,25 +34,20 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void _scrollListener() {
     if (scrollController.position.maxScrollExtent ==
         scrollController.position.pixels) {
-      ref.read(downloadProvider.notifier).getNextPage();
+      //ref.read(videoListControllerProvider.notifier).getNextPage();
     }
   }
 
   @override
   void dispose() {
     scrollController.removeListener(_scrollListener);
-    // Eğer çalan müzik varsa durdur
-    final currentVideo = ref.read(downloadProvider).currentVideo;
-    if (currentVideo != null) {
-      ref.read(downloadProvider.notifier).stop(currentVideo);
-    }
     scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final videoList = ref.watch(downloadProvider).videoList;
+    final videoList = ref.watch(videoListControllerProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Results')),
@@ -55,17 +55,14 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         child: Stack(
           children: [
             Center(
-              child: videoList.isEmpty
+              child: videoList.isLoading
                   ? const CircularProgressIndicator()
                   : ListView.builder(
                       controller: scrollController,
-                      itemCount: videoList.length,
+                      itemCount: videoList.videos.length,
                       itemBuilder: (context, index) {
-                        final video = videoList[index];
-                        return MusicCard(
-                          key: ValueKey(video.model.id),
-                          video: video,
-                        );
+                        final video = videoList.videos[index];
+                        return MusicCard(key: ValueKey(video.id), video: video);
                       },
                     ),
             ),

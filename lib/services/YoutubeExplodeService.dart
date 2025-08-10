@@ -6,8 +6,11 @@ class YoutubeExplodeService {
   VideoSearchList? searchResult;
 
   Future<String> getMusicStreamUrl(String url) async {
-    final manifest = await youtube.videos.streamsClient.getManifest(url);
-    final streamInfo = manifest.audioOnly.withHighestBitrate();
+    final manifest = await youtube.videos.streamsClient.getManifest(
+      url,
+      requireWatchPage: false,
+    );
+    final streamInfo = manifest.audioOnly.sortByBitrate().first;
     return streamInfo.url.toString();
   }
 

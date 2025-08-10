@@ -10,8 +10,6 @@ class MusicSlider extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final musicPlayerState = ref.watch(musicPlayerProvider);
     final musicPlayerNotifier = ref.read(musicPlayerProvider.notifier);
-    final currentPosition = musicPlayerState.currentPosition;
-    final totalDuration = musicPlayerState.totalDuration;
 
     if (musicPlayerState.model == null) return const SizedBox.shrink();
 
@@ -30,14 +28,16 @@ class MusicSlider extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             children: [
-              Text(formatDuration(currentPosition)),
+              Text(formatDuration(musicPlayerState.currentPosition)),
               Expanded(
                 child: Slider(
-                  value: currentPosition.inSeconds.toDouble().clamp(
-                    0,
-                    totalDuration.inSeconds.toDouble(),
-                  ),
-                  max: totalDuration.inSeconds.toDouble(),
+                  value: musicPlayerState.currentPosition.inSeconds
+                      .toDouble()
+                      .clamp(
+                        0,
+                        musicPlayerState.totalDuration.inSeconds.toDouble(),
+                      ),
+                  max: musicPlayerState.totalDuration.inSeconds.toDouble(),
                   onChanged: (value) {
                     musicPlayerNotifier.player.seek(
                       Duration(seconds: value.toInt()),
@@ -45,7 +45,7 @@ class MusicSlider extends ConsumerWidget {
                   },
                 ),
               ),
-              Text(formatDuration(totalDuration)),
+              Text(formatDuration(musicPlayerState.totalDuration)),
             ],
           ),
         ),

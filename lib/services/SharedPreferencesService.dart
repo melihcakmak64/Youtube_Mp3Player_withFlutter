@@ -18,4 +18,9 @@ class SharedPreferencesService {
       await prefs.setStringList(key, downloadedVideos);
     }
   }
+
+  static Future<List<String>> getFiles(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(key) ?? [];
+  }
 }

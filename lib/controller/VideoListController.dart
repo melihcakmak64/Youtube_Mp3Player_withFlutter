@@ -51,10 +51,13 @@ final downloadControllerProvider =
     StateNotifierProvider<DownloadController, Map<String, DownloadInfo>>((ref) {
       final downloadService = ref.read(downloadServiceProvider);
       final youtubeService = ref.read(youtubeExplodeServiceProvider);
-      return DownloadController(
+
+      final controller = DownloadController(
         downloadService: downloadService,
         youtubeService: youtubeService,
       );
+      controller.loadSavedDownloads();
+      return controller;
     });
 
 final downloadInfoProvider = Provider.family<DownloadInfo?, String>((

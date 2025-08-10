@@ -9,10 +9,10 @@
 
 
 
-        
-
         <!-- İnternet üzerinden içerik indirme izni -->
         <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+        <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <application
         android:label="youtube_downloader"
         android:name="${applicationName}"

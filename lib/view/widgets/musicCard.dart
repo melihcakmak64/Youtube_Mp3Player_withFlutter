@@ -74,10 +74,10 @@ class MusicCard extends ConsumerWidget {
                   return IconButton(
                     icon: const Icon(Icons.download),
                     onPressed: () async {
-                      await downloadNotifier.startDownload(video);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('İndirme başlatıldı')),
                       );
+                      await downloadNotifier.startDownload(video);
                     },
                   );
                 }

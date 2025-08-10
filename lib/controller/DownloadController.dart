@@ -12,17 +12,11 @@ enum DownloadStatus { notDownloaded, downloading, downloaded, failed }
 class DownloadInfo {
   final DownloadStatus status;
   final double progress; // 0..1 arası
-  final ResponseModel video;
 
-  DownloadInfo({
-    required this.video,
-    this.status = DownloadStatus.notDownloaded,
-    this.progress = 0,
-  });
+  DownloadInfo({this.status = DownloadStatus.notDownloaded, this.progress = 0});
 
   DownloadInfo copyWith({DownloadStatus? status, double? progress}) {
     return DownloadInfo(
-      video: video,
       status: status ?? this.status,
       progress: progress ?? this.progress,
     );
@@ -43,18 +37,14 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
   }
 
   Future<void> startDownload(ResponseModel video) async {
-    final videoId = video.url;
+    final videoUrl = video.url;
 
-    if (state[videoId]?.status == DownloadStatus.downloading) return;
+    if (state[videoUrl]?.status == DownloadStatus.downloading) return;
 
     // İndiriliyor durumuna setle
     state = {
       ...state,
-      videoId: DownloadInfo(
-        video: video,
-        status: DownloadStatus.downloading,
-        progress: 0,
-      ),
+      videoUrl: DownloadInfo(status: DownloadStatus.downloading, progress: 0),
     };
 
     try {
@@ -63,8 +53,7 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         // İzin verilmezse iptal et
         state = {
           ...state,
-          videoId: DownloadInfo(
-            video: video,
+          videoUrl: DownloadInfo(
             status: DownloadStatus.notDownloaded,
             progress: 0,
           ),
@@ -80,13 +69,13 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         fileName: video.title,
         totalBytes: musicData.totalBytes,
         onProgress: (progress) async {
-          final current = state[videoId];
+          final current = state[videoUrl];
           if (current != null) {
-            state = {...state, videoId: current.copyWith(progress: progress)};
+            state = {...state, videoUrl: current.copyWith(progress: progress)};
           }
           int percent = (progress * 100).toInt();
           await NotificationService.showDownloadProgress(
-            id: videoId.hashCode,
+            id: videoUrl.hashCode,
             title: video.title,
             progress: percent,
           );
@@ -98,30 +87,40 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       // İndirme tamamlandı olarak setle
       state = {
         ...state,
-        videoId: DownloadInfo(
-          video: video,
-          status: DownloadStatus.downloaded,
-          progress: 1,
-        ),
+        videoUrl: DownloadInfo(status: DownloadStatus.downloaded, progress: 1),
       };
       await NotificationService.showDownloadProgress(
-        id: videoId.hashCode,
+        id: videoUrl.hashCode,
         title: video.title,
         progress: 100,
       );
     } catch (e) {
-      await NotificationService.cancel(videoId.hashCode);
+      await NotificationService.cancel(videoUrl.hashCode);
 
       // Hata durumunda
       state = {
         ...state,
-        videoId: DownloadInfo(
-          video: video,
-          status: DownloadStatus.failed,
-          progress: 0,
-        ),
+        videoUrl: DownloadInfo(status: DownloadStatus.failed, progress: 0),
       };
     }
+  }
+
+  Future<void> loadSavedDownloads() async {
+    final savedUrls = await SharedPreferencesService.getFiles(
+      'downloadedVideos',
+    );
+
+    final restoredState = <String, DownloadInfo>{};
+
+    for (var url in savedUrls) {
+      // Burada video başlığını, thumbnail vs. yeniden bulmak için youtubeService kullanabilirsin
+      restoredState[url] = DownloadInfo(
+        status: DownloadStatus.downloaded,
+        progress: 1,
+      );
+    }
+
+    state = restoredState;
   }
 
   Future<bool> _hasStoragePermission() async {
@@ -133,13 +132,10 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     final info = state[video.url];
     if (info == null) return;
 
-    final result = await downloadService.deleteFile(info.video.title);
+    final result = await downloadService.deleteFile(video.title);
 
     if (result) {
-      await SharedPreferencesService.removeFile(
-        'downloadedVideos',
-        info.video.url,
-      );
+      await SharedPreferencesService.removeFile('downloadedVideos', video.url);
       // Bildirimi iptal et
       await NotificationService.cancel(video.url.hashCode);
       state = {

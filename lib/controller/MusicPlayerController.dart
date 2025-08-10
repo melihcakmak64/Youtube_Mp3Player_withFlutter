@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/MusicPlayerState.dart';
+import 'package:youtube_downloader/model/MusicPlayerState.dart';
 import 'package:youtube_downloader/controller/controller_initializers.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/MusicPlayerService.dart';

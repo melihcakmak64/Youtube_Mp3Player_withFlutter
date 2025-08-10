@@ -19,8 +19,6 @@ class MusicCard extends ConsumerWidget {
     final formattedDuration = formatDuration(duration ?? Duration.zero);
     final isPlaying = ref.watch(isVideoPlayingProvider(video.url));
 
-    print("deneme widget build $key");
-
     return Card(
       child: ListTile(
         leading: FadeInImage.assetNetwork(
@@ -48,8 +46,6 @@ class MusicCard extends ConsumerWidget {
             // Progress / Download / Delete kısmı (izole edilmiş)
             Consumer(
               builder: (context, ref, _) {
-                print("deneme iç  build $key");
-
                 final downloadInfo = ref.watch(downloadInfoProvider(video.url));
 
                 if (downloadInfo?.status == DownloadStatus.downloading) {

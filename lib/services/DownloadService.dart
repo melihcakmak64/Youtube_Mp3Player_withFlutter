@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:youtube_downloader/core/StringExtensions.dart';
 
 typedef ProgressCallback = void Function(double progress);
 
@@ -21,8 +22,10 @@ class DownloadService {
     ProgressCallback? onProgress,
   }) async {
     final path = await getDownloadFolderPath();
-    final file = File('$path/$fileName.mp3');
-
+    final file = File('$path/${fileName.sanitize()}.mp3');
+    if (await file.exists()) {
+      await file.delete();
+    }
     final fileSink = file.openWrite();
     int downloadedBytes = 0;
 
@@ -47,7 +50,7 @@ class DownloadService {
   /// Dosya mevcut mu kontrol eder
   Future<bool> fileExists(String fileName) async {
     final path = await getDownloadFolderPath();
-    return File('$path/$fileName.mp3').exists();
+    return File('$path/${fileName.sanitize()}.mp3').exists();
   }
 
   /// Dosyayı siler

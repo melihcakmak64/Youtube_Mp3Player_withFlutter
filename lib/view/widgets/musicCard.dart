@@ -26,7 +26,12 @@ class MusicCard extends ConsumerWidget {
           image: video.thumbnails.mediumResUrl,
           fit: BoxFit.cover,
         ),
-        title: Text("${video.title} ($formattedDuration)", maxLines: 3),
+        title: Text(
+          "${video.title}",
+          maxLines: 2,
+          style: TextStyle(fontSize: 14),
+        ),
+        subtitle: Text(formattedDuration),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

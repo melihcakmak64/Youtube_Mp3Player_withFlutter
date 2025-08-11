@@ -14,15 +14,16 @@ class DownloadService {
     return downloadPath;
   }
 
-  /// Stream'i mp3 dosyası olarak kaydeder
-  Future<File> saveMusicStream({
+  Future<File> saveStream({
     required Stream<List<int>> stream,
     required String fileName,
-    required int totalBytes, // Toplam boyut burada lazım
+    required String extension, // mp3, mp4, webm vs.
+    required int totalBytes,
     ProgressCallback? onProgress,
   }) async {
     final path = await getDownloadFolderPath();
-    final file = File('$path/${fileName.sanitize()}.mp3');
+    final file = File('$path/${fileName.sanitize()}.$extension');
+
     if (await file.exists()) {
       await file.delete();
     }
@@ -37,7 +38,7 @@ class DownloadService {
         final progress = downloadedBytes / totalBytes;
         onProgress?.call(progress.clamp(0.0, 1.0));
       } else {
-        onProgress?.call(-1); // Toplam boyut bilinmiyor
+        onProgress?.call(-1);
       }
     }
 
@@ -50,13 +51,15 @@ class DownloadService {
   /// Dosya mevcut mu kontrol eder
   Future<bool> fileExists(String fileName) async {
     final path = await getDownloadFolderPath();
-    return File('$path/${fileName.sanitize()}.mp3').exists();
+    return File('$path/${fileName.sanitize()}').exists();
   }
 
   /// Dosyayı siler
   Future<bool> deleteFile(String fileName) async {
     final path = await getDownloadFolderPath();
-    final file = File('$path/${fileName.sanitize()}.mp3');
+    print("deneme");
+    print('$path/${fileName.sanitize()}');
+    final file = File('$path/${fileName.sanitize()}');
     if (await file.exists()) {
       await file.delete();
       return true;

@@ -58,4 +58,18 @@ class YoutubeExplodeService {
             .toList() ??
         [];
   }
+
+  Future<List<StreamInfo>> getAllQualityOptions(String url) async {
+    final manifest = await youtube.videos.streamsClient.getManifest(url);
+
+    final audioList = manifest.audioOnly
+        .where((a) => a.container.name == 'mp4')
+        .toList();
+
+    final videoList = manifest.video
+        .where((v) => v.container.name == 'mp4')
+        .toList();
+
+    return [...audioList, ...videoList];
+  }
 }

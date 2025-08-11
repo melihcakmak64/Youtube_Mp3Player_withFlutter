@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/services/NotificationService.dart';
-import 'package:youtube_downloader/services/PermissionHandler.dart';
+import 'package:youtube_downloader/core/PermissionHandler.dart';
 import 'view/HomePage.dart';
 
 void main() async {

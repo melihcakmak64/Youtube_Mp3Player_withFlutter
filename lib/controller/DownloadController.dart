@@ -3,8 +3,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
 import 'package:youtube_downloader/services/NotificationService.dart';
-import 'package:youtube_downloader/services/PermissionHandler.dart';
-import 'package:youtube_downloader/services/SharedPreferencesService.dart';
+import 'package:youtube_downloader/core/PermissionHandler.dart';
+import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
 
 class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {

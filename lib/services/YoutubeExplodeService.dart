@@ -5,32 +5,43 @@ class YoutubeExplodeService {
   final YoutubeExplode youtube = YoutubeExplode();
   VideoSearchList? searchResult;
 
-  Future<String> getMusicStreamUrl(String url) async {
+  /// Ortak manifest alma ve en yüksek bitrate seçme
+  Future<AudioOnlyStreamInfo> _getBestAudioStreamInfo(
+    String url, {
+    bool requireWatchPage = true,
+  }) async {
     final manifest = await youtube.videos.streamsClient.getManifest(
+      url,
+      requireWatchPage: requireWatchPage,
+    );
+    return manifest.audioOnly.withHighestBitrate();
+  }
+
+  /// Sadece stream URL'sini döndürür
+  Future<String> getMusicStreamUrl(String url) async {
+    final streamInfo = await _getBestAudioStreamInfo(
       url,
       requireWatchPage: false,
     );
-    final streamInfo = manifest.audioOnly.sortByBitrate().first;
     return streamInfo.url.toString();
   }
 
-  /// Hem stream'i hem de boyut bilgisini döndürür
+  /// Hem stream hem boyut bilgisini döndürür
   Future<({Stream<List<int>> stream, int totalBytes})> getMusicStreamWithInfo(
     String url,
   ) async {
-    final manifest = await youtube.videos.streamsClient.getManifest(url);
-    final streamInfo = manifest.audioOnly.withHighestBitrate();
+    final streamInfo = await _getBestAudioStreamInfo(url);
     final stream = youtube.videos.streamsClient.get(streamInfo);
     return (stream: stream, totalBytes: streamInfo.size.totalBytes);
   }
 
+  /// Sadece stream döndürür
   Future<Stream<List<int>>> getMusicStream(String url) async {
-    final manifest = await youtube.videos.streamsClient.getManifest(url);
-    final streamInfo = manifest.audioOnly.withHighestBitrate();
-    final stream = youtube.videos.streamsClient.get(streamInfo);
-    return stream;
+    final streamInfo = await _getBestAudioStreamInfo(url);
+    return youtube.videos.streamsClient.get(streamInfo);
   }
 
+  /// Video arama
   Future<List<ResponseModel>> searchVideos(String query) async {
     searchResult = await youtube.search(query);
     return searchResult

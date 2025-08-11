@@ -7,22 +7,6 @@ import 'package:youtube_downloader/services/PermissionHandler.dart';
 import 'package:youtube_downloader/services/SharedPreferencesService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
 
-enum DownloadStatus { notDownloaded, downloading, downloaded, failed }
-
-class DownloadInfo {
-  final DownloadStatus status;
-  final double progress; // 0..1 arası
-
-  DownloadInfo({this.status = DownloadStatus.notDownloaded, this.progress = 0});
-
-  DownloadInfo copyWith({DownloadStatus? status, double? progress}) {
-    return DownloadInfo(
-      status: status ?? this.status,
-      progress: progress ?? this.progress,
-    );
-  }
-}
-
 class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
   final DownloadService downloadService;
   final YoutubeExplodeService youtubeService;
@@ -32,16 +16,11 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     required this.youtubeService,
   }) : super({});
 
-  DownloadInfo? getDownloadInfo(String videoId) {
-    return state[videoId];
-  }
-
   Future<void> startDownload(ResponseModel video) async {
     final videoUrl = video.url;
 
     if (state[videoUrl]?.status == DownloadStatus.downloading) return;
 
-    // İndiriliyor durumuna setle
     state = {
       ...state,
       videoUrl: DownloadInfo(status: DownloadStatus.downloading, progress: 0),
@@ -146,5 +125,21 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         ),
       };
     }
+  }
+}
+
+enum DownloadStatus { notDownloaded, downloading, downloaded, failed }
+
+class DownloadInfo {
+  final DownloadStatus status;
+  final double progress; // 0..1 arası
+
+  DownloadInfo({this.status = DownloadStatus.notDownloaded, this.progress = 0});
+
+  DownloadInfo copyWith({DownloadStatus? status, double? progress}) {
+    return DownloadInfo(
+      status: status ?? this.status,
+      progress: progress ?? this.progress,
+    );
   }
 }

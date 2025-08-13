@@ -21,16 +21,18 @@ class YoutubeExplodeService {
         .toList();
   }
 
-  /// Ortak manifest alma ve en yüksek bitrate seçme
   Future<AudioOnlyStreamInfo> getAudioStream(
     String url, {
     bool requireWatchPage = false,
+    bool isLowest = true,
   }) async {
     final manifest = await youtube.videos.streamsClient.getManifest(
       url,
       requireWatchPage: requireWatchPage,
     );
-    return manifest.audioOnly.sortByBitrate().first;
+    return isLowest
+        ? manifest.audioOnly.sortByBitrate().first
+        : manifest.audioOnly.withHighestBitrate();
   }
 
   Future<List<StreamInfo>> getAllQualityOptions(String url) async {

@@ -57,14 +57,12 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         return;
       }
 
-      state = {
-        ...state,
-        videoUrl: DownloadInfo(
-          status: DownloadStatus.downloading,
-          progress: 0,
-          extension: streamInfo.container.name,
-        ),
-      };
+      updateState(
+        videoUrl,
+        status: DownloadStatus.downloading,
+        progress: 0,
+        extension: streamInfo.container.name,
+      );
 
       final stream = youtubeService.youtube.videos.streamsClient.get(
         streamInfo,
@@ -76,10 +74,8 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         extension: streamInfo.container.name,
         totalBytes: streamInfo.size.totalBytes,
         onProgress: (progress) async {
-          final current = state[videoUrl];
-          if (current != null) {
-            state = {...state, videoUrl: current.copyWith(progress: progress)};
-          }
+          updateState(videoUrl, progress: progress);
+
           await NotificationService.showDownloadProgress(
             id: videoUrl.hashCode,
             title: video.title.sanitize(),
@@ -95,15 +91,13 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         'path': file.path,
       });
 
-      state = {
-        ...state,
-        videoUrl: DownloadInfo(
-          status: DownloadStatus.downloaded,
-          progress: 1,
-          extension: streamInfo.container.name,
-          path: file.path,
-        ),
-      };
+      updateState(
+        videoUrl,
+        status: DownloadStatus.downloaded,
+        progress: 1,
+        path: file.path,
+        extension: streamInfo.container.name,
+      );
 
       await NotificationService.showDownloadProgress(
         id: videoUrl.hashCode,
@@ -112,7 +106,7 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       );
     } catch (e) {
       await NotificationService.cancel(videoUrl.hashCode);
-      state = {...state, videoUrl: DownloadInfo(status: DownloadStatus.failed)};
+      updateState(videoUrl, status: DownloadStatus.failed);
     }
   }
 
@@ -135,27 +129,42 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
           video.url,
         );
         await NotificationService.cancel(video.url.hashCode);
-        state = {
-          ...state,
-          video.url: info.copyWith(
-            status: DownloadStatus.notDownloaded,
-            progress: 0,
-            path: '',
-          ),
-        };
+        updateState(
+          video.url,
+          status: DownloadStatus.notDownloaded,
+          progress: 0,
+          path: '',
+        );
       }
     } else {
       await SharedPreferencesService.removeFile('downloadedVideos', video.url);
       await NotificationService.cancel(video.url.hashCode);
-      state = {
-        ...state,
-        video.url: info.copyWith(
-          status: DownloadStatus.notDownloaded,
-          progress: 0,
-          path: '',
-        ),
-      };
+      updateState(
+        video.url,
+        status: DownloadStatus.notDownloaded,
+        progress: 0,
+        path: '',
+      );
     }
+  }
+
+  void updateState(
+    String videoUrl, {
+    DownloadStatus? status,
+    double? progress,
+    String? extension,
+    String? path,
+  }) {
+    final current = state[videoUrl] ?? DownloadInfo();
+    state = {
+      ...state,
+      videoUrl: current.copyWith(
+        status: status,
+        progress: progress,
+        extension: extension,
+        path: path,
+      ),
+    };
   }
 }
 

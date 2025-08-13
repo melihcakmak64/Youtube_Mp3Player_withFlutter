@@ -22,39 +22,15 @@ class YoutubeExplodeService {
   }
 
   /// Ortak manifest alma ve en yüksek bitrate seçme
-  Future<AudioOnlyStreamInfo> _getBestAudioStreamInfo(
+  Future<AudioOnlyStreamInfo> getAudioStream(
     String url, {
-    bool requireWatchPage = true,
+    bool requireWatchPage = false,
   }) async {
     final manifest = await youtube.videos.streamsClient.getManifest(
       url,
       requireWatchPage: requireWatchPage,
     );
-    return manifest.audioOnly.withHighestBitrate();
-  }
-
-  /// Sadece stream URL'sini döndürür
-  Future<String> getMusicStreamUrl(String url) async {
-    final streamInfo = await _getBestAudioStreamInfo(
-      url,
-      requireWatchPage: false,
-    );
-    return streamInfo.url.toString();
-  }
-
-  /// Hem stream hem boyut bilgisini döndürür
-  Future<({Stream<List<int>> stream, int totalBytes})> getMusicStreamWithInfo(
-    String url,
-  ) async {
-    final streamInfo = await _getBestAudioStreamInfo(url);
-    final stream = youtube.videos.streamsClient.get(streamInfo);
-    return (stream: stream, totalBytes: streamInfo.size.totalBytes);
-  }
-
-  /// Sadece stream döndürür
-  Future<Stream<List<int>>> getMusicStream(String url) async {
-    final streamInfo = await _getBestAudioStreamInfo(url);
-    return youtube.videos.streamsClient.get(streamInfo);
+    return manifest.audioOnly.sortByBitrate().first;
   }
 
   Future<List<StreamInfo>> getAllQualityOptions(String url) async {

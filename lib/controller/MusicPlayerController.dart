@@ -41,8 +41,8 @@ class MusicPlayerNotifier extends StateNotifier<MusicPlayerState> {
     );
 
     try {
-      final url = await youtubeService.getMusicStreamUrl(video.url);
-      await player.playMusicFromUrl(url);
+      final stream = await youtubeService.getAudioStream(video.url);
+      await player.playMusicFromUrl(stream.url.toString());
     } catch (e) {
       state = state.copyWith(
         isPlaying: false,
@@ -63,14 +63,6 @@ class MusicPlayerNotifier extends StateNotifier<MusicPlayerState> {
       currentPosition: Duration.zero,
       totalDuration: Duration.zero,
     );
-  }
-
-  bool isVideoPlaying(ResponseModel video) {
-    return state.model?.url == video.url && state.isPlaying;
-  }
-
-  bool isPlaying() {
-    return state.isPlaying;
   }
 
   @override

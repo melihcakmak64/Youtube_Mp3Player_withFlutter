@@ -4,7 +4,7 @@ import 'package:youtube_downloader/controller/MusicPlayerController.dart';
 import 'package:youtube_downloader/helper/helper.dart';
 
 class MusicSlider extends ConsumerWidget {
-  MusicSlider({super.key});
+  const MusicSlider({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

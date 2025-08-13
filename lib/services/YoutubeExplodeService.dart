@@ -66,6 +66,9 @@ class YoutubeExplodeService {
         .where((a) => a.container.name == 'mp4')
         .toList();
 
+    print("deneme");
+    print(manifest.audioOnly.sortByBitrate());
+
     final videoList = manifest.video
         .where((v) => v.container.name == 'mp4')
         .toList();

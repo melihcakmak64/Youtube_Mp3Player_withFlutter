@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:youtube_downloader/core/StringExtensions.dart';
 
 typedef ProgressCallback = void Function(double progress);
 
@@ -14,6 +13,7 @@ class DownloadService {
     return downloadPath;
   }
 
+  /// Stream'i kaydeder ve tam dosya yolunu döner
   Future<File> saveStream({
     required Stream<List<int>> stream,
     required String fileName,
@@ -22,11 +22,12 @@ class DownloadService {
     ProgressCallback? onProgress,
   }) async {
     final path = await getDownloadFolderPath();
-    final file = File('$path/${fileName.sanitize()}.$extension');
+    final file = File('$path/$fileName.$extension');
 
     if (await file.exists()) {
       await file.delete();
     }
+
     final fileSink = file.openWrite();
     int downloadedBytes = 0;
 
@@ -35,8 +36,7 @@ class DownloadService {
       fileSink.add(data);
 
       if (totalBytes > 0) {
-        final progress = downloadedBytes / totalBytes;
-        onProgress?.call(progress.clamp(0.0, 1.0));
+        onProgress?.call((downloadedBytes / totalBytes).clamp(0.0, 1.0));
       } else {
         onProgress?.call(-1);
       }
@@ -44,22 +44,16 @@ class DownloadService {
 
     await fileSink.flush();
     await fileSink.close();
-
     return file;
   }
 
-  /// Dosya mevcut mu kontrol eder
-  Future<bool> fileExists(String fileName) async {
-    final path = await getDownloadFolderPath();
-    return File('$path/${fileName.sanitize()}').exists();
+  Future<bool> fileExists(String filePath) async {
+    final file = File(filePath);
+    return file.exists();
   }
 
-  /// Dosyayı siler
-  Future<bool> deleteFile(String fileName) async {
-    final path = await getDownloadFolderPath();
-    print("deneme");
-    print('$path/${fileName.sanitize()}');
-    final file = File('$path/${fileName.sanitize()}');
+  Future<bool> deleteFile(String filePath) async {
+    final file = File(filePath);
     if (await file.exists()) {
       await file.delete();
       return true;

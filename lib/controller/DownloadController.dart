@@ -1,7 +1,7 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
-import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
 import 'package:youtube_downloader/services/NotificationService.dart';
@@ -19,28 +19,35 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     required this.youtubeService,
   }) : super({});
 
+  /// Kayıtlı dosyaları yükler, yoksa listeden siler
   Future<void> loadSavedDownloads() async {
-    final savedUrls = await SharedPreferencesService.getFiles(
-      'downloadedVideos',
-    );
-
+    final saved = await SharedPreferencesService.getFiles('downloadedVideos');
     final restoredState = <String, DownloadInfo>{};
 
-    for (var url in savedUrls) {
-      // Burada video başlığını, thumbnail vs. yeniden bulmak için youtubeService kullanabilirsin
-      restoredState[url] = DownloadInfo(
-        status: DownloadStatus.downloaded,
-        progress: 1,
-      );
+    for (var item in saved) {
+      final filePath = item['path'];
+      final extension = item['extension'] ?? '';
+      final url = item['url'];
+
+      if (filePath != null && File(filePath).existsSync()) {
+        restoredState[url] = DownloadInfo(
+          status: DownloadStatus.downloaded,
+          progress: 1,
+          extension: extension,
+          path: filePath,
+        );
+      } else {
+        await SharedPreferencesService.removeFile('downloadedVideos', url);
+      }
     }
 
     state = restoredState;
   }
 
+  /// İndirme başlat
   Future<void> startDownload({
     required ResponseModel video,
-    required StreamInfo
-    streamInfo, // AudioOnlyStreamInfo veya VideoStreamInfo olabilir
+    required StreamInfo streamInfo,
   }) async {
     final videoUrl = video.url;
 
@@ -58,10 +65,7 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         await PermissionHandler.chekPermission();
         state = {
           ...state,
-          videoUrl: DownloadInfo(
-            status: DownloadStatus.notDownloaded,
-            progress: 0,
-          ),
+          videoUrl: DownloadInfo(status: DownloadStatus.notDownloaded),
         };
         return;
       }
@@ -70,26 +74,30 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         streamInfo,
       );
 
-      await downloadService.saveStream(
+      final file = await downloadService.saveStream(
         stream: stream,
-        fileName: video.title,
-        extension: streamInfo.container.name, // mp3, mp4 vb.
+        fileName: video.title.sanitize(),
+        extension: streamInfo.container.name,
         totalBytes: streamInfo.size.totalBytes,
         onProgress: (progress) async {
           final current = state[videoUrl];
           if (current != null) {
             state = {...state, videoUrl: current.copyWith(progress: progress)};
           }
-          int percent = (progress * 100).toInt();
           await NotificationService.showDownloadProgress(
             id: videoUrl.hashCode,
-            title: video.title,
-            progress: percent,
+            title: video.title.sanitize(),
+            progress: (progress * 100).toInt(),
           );
         },
       );
 
-      await SharedPreferencesService.addFile('downloadedVideos', video.url);
+      await SharedPreferencesService.addFile('downloadedVideos', {
+        'url': video.url,
+        'extension': streamInfo.container.name,
+        'title': video.title.sanitize(),
+        'path': file.path,
+      });
 
       state = {
         ...state,
@@ -97,44 +105,58 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
           status: DownloadStatus.downloaded,
           progress: 1,
           extension: streamInfo.container.name,
+          path: file.path,
         ),
       };
+
       await NotificationService.showDownloadProgress(
         id: videoUrl.hashCode,
-        title: video.title,
+        title: video.title.sanitize(),
         progress: 100,
       );
     } catch (e) {
       await NotificationService.cancel(videoUrl.hashCode);
-      state = {
-        ...state,
-        videoUrl: DownloadInfo(status: DownloadStatus.failed, progress: 0),
-      };
+      state = {...state, videoUrl: DownloadInfo(status: DownloadStatus.failed)};
     }
   }
 
+  /// Depolama izni kontrolü
   Future<bool> _hasStoragePermission() async {
     return (await Permission.audio.status.isGranted) ||
         (await Permission.storage.status.isGranted);
   }
 
+  /// İndirilen dosyayı sil
   Future<void> deleteDownload(ResponseModel video) async {
     final info = state[video.url];
     if (info == null) return;
 
-    final result = await downloadService.deleteFile(
-      "${video.title}.${info.extension}",
-    );
-
-    if (result) {
+    if (info.path != null && await downloadService.fileExists(info.path!)) {
+      final result = await downloadService.deleteFile(info.path!);
+      if (result) {
+        await SharedPreferencesService.removeFile(
+          'downloadedVideos',
+          video.url,
+        );
+        await NotificationService.cancel(video.url.hashCode);
+        state = {
+          ...state,
+          video.url: info.copyWith(
+            status: DownloadStatus.notDownloaded,
+            progress: 0,
+            path: '',
+          ),
+        };
+      }
+    } else {
       await SharedPreferencesService.removeFile('downloadedVideos', video.url);
-      // Bildirimi iptal et
       await NotificationService.cancel(video.url.hashCode);
       state = {
         ...state,
         video.url: info.copyWith(
           status: DownloadStatus.notDownloaded,
           progress: 0,
+          path: '',
         ),
       };
     }
@@ -145,24 +167,28 @@ enum DownloadStatus { notDownloaded, downloading, downloaded, failed }
 
 class DownloadInfo {
   final DownloadStatus status;
-  final double progress; // 0..1 arası
-  final String extension; // "mp3", "mp4", "webm" gibi
+  final double progress;
+  final String extension;
+  final String? path;
 
   DownloadInfo({
     this.status = DownloadStatus.notDownloaded,
     this.progress = 0,
     this.extension = '',
+    this.path,
   });
 
   DownloadInfo copyWith({
     DownloadStatus? status,
     double? progress,
     String? extension,
+    String? path,
   }) {
     return DownloadInfo(
       status: status ?? this.status,
       progress: progress ?? this.progress,
       extension: extension ?? this.extension,
+      path: path ?? this.path,
     );
   }
 }

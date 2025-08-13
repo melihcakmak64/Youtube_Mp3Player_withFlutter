@@ -4,15 +4,6 @@ import 'package:path_provider/path_provider.dart';
 typedef ProgressCallback = void Function(double progress);
 
 class DownloadService {
-  /// İndirilecek klasörün tam yolunu döner
-  Future<String> getDownloadFolderPath() async {
-    final directory = await getExternalStorageDirectory();
-    final downloadPath =
-        '${directory!.parent.parent.parent.parent.path}/Download/MusicFolder';
-    await Directory(downloadPath).create(recursive: true);
-    return downloadPath;
-  }
-
   /// Stream'i kaydeder ve tam dosya yolunu döner
   Future<File> saveStream({
     required Stream<List<int>> stream,
@@ -47,11 +38,6 @@ class DownloadService {
     return file;
   }
 
-  Future<bool> fileExists(String filePath) async {
-    final file = File(filePath);
-    return file.exists();
-  }
-
   Future<bool> deleteFile(String filePath) async {
     final file = File(filePath);
     if (await file.exists()) {
@@ -59,5 +45,19 @@ class DownloadService {
       return true;
     }
     return false;
+  }
+
+  Future<bool> fileExists(String filePath) async {
+    final file = File(filePath);
+    return file.exists();
+  }
+
+  /// İndirilecek klasörün tam yolunu döner
+  Future<String> getDownloadFolderPath() async {
+    final directory = await getExternalStorageDirectory();
+    final downloadPath =
+        '${directory!.parent.parent.parent.parent.path}/Download/MusicFolder';
+    await Directory(downloadPath).create(recursive: true);
+    return downloadPath;
   }
 }

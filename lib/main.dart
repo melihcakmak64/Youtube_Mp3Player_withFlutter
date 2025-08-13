@@ -7,7 +7,7 @@ import 'view/HomePage.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await PermissionHandler.chekPermission();
+  await PermissionHandler.checkPermission();
   await NotificationService.init();
 
   runApp(ProviderScope(child: const MainApp()));

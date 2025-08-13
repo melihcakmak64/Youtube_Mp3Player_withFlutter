@@ -50,25 +50,21 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     required StreamInfo streamInfo,
   }) async {
     final videoUrl = video.url;
-
-    state = {
-      ...state,
-      videoUrl: DownloadInfo(
-        status: DownloadStatus.downloading,
-        progress: 0,
-        extension: streamInfo.container.name,
-      ),
-    };
-
     try {
       if (!await _hasStoragePermission()) {
-        await PermissionHandler.chekPermission();
-        state = {
-          ...state,
-          videoUrl: DownloadInfo(status: DownloadStatus.notDownloaded),
-        };
+        await PermissionHandler.checkPermission();
+
         return;
       }
+
+      state = {
+        ...state,
+        videoUrl: DownloadInfo(
+          status: DownloadStatus.downloading,
+          progress: 0,
+          extension: streamInfo.container.name,
+        ),
+      };
 
       final stream = youtubeService.youtube.videos.streamsClient.get(
         streamInfo,

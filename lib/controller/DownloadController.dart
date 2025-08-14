@@ -52,7 +52,7 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     final videoUrl = video.url;
     try {
       if (!await _hasStoragePermission()) {
-        await PermissionHandler.checkPermission();
+        await PermissionHandler.ensurePermissions();
 
         return;
       }

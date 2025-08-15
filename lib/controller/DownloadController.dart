@@ -21,7 +21,6 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
   }) : super({});
 
   Future<void> startForegroundTask() async {
-    await ForegroundServiceManager.start();
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
   }
 

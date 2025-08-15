@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
-import 'package:youtube_downloader/view/ExamplePage.dart';
+import 'package:youtube_downloader/view/HomePage.dart';
 
 void main() async {
   FlutterForegroundTask.initCommunicationPort();
@@ -19,7 +19,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: ExamplePage(),
+      home: HomePage(),
       theme: ThemeData(primaryColor: Colors.red, useMaterial3: true),
       debugShowCheckedModeBanner: false,
     );

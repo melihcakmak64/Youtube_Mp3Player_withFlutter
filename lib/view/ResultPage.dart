@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/VideoListController.dart';
+import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/view/widgets/MusicCard.dart';
 import 'package:youtube_downloader/view/widgets/Slider.dart';
 
@@ -19,9 +21,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   @override
   void initState() {
     super.initState();
+    FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
     scrollController = ScrollController();
-    // Arama işlemini başlat
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ForegroundServiceManager.init();
       ref
           .read(videoListControllerProvider.notifier)
           .searchVideos(widget.searchTerm);
@@ -41,7 +45,14 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void dispose() {
     scrollController.removeListener(_scrollListener);
     scrollController.dispose();
+    FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
     super.dispose();
+  }
+
+  void _onReceiveTaskData(Object data) {
+    if (data is int) {
+      // ref.read(counterProvider.notifier).updateFromTask(data);
+    }
   }
 
   @override

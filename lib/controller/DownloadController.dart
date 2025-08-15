@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
@@ -66,6 +67,8 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       final stream = youtubeService.youtube.videos.streamsClient.get(
         streamInfo,
       );
+
+      FlutterForegroundTask.sendDataToTask(stream);
 
       final file = await downloadService.saveStream(
         stream: stream,

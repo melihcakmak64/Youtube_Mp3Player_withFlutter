@@ -6,35 +6,22 @@ void startCallback() {
 }
 
 class MyTaskHandler extends TaskHandler {
-  static const String incrementCountCommand = 'incrementCount';
-  int _count = 0;
-
-  void _incrementCount() {
-    _count++;
-    FlutterForegroundTask.updateService(
-      notificationTitle: 'Foreground Task',
-      notificationText: 'count: $_count',
-    );
-    FlutterForegroundTask.sendDataToMain(_count);
-  }
-
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    _incrementCount();
+    FlutterForegroundTask.updateService(
+      notificationTitle: 'Foreground Task',
+      notificationText: 'service started',
+    );
   }
 
   @override
-  void onRepeatEvent(DateTime timestamp) {
-    _incrementCount();
-  }
+  void onRepeatEvent(DateTime timestamp) {}
 
   @override
   Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {}
 
   @override
-  void onReceiveData(Object data) {
-    if (data == incrementCountCommand) _incrementCount();
-  }
+  void onReceiveData(Object data) {}
 
   @override
   void onNotificationButtonPressed(String id) {}

@@ -51,7 +51,7 @@ class DownloadQualityDialog extends ConsumerWidget {
                       subtitle: Text(
                         '${opt.size.totalMegaBytes.toStringAsFixed(2)} MB',
                       ),
-                      onTap: () {
+                      onTap: () async {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -60,7 +60,7 @@ class DownloadQualityDialog extends ConsumerWidget {
                             ),
                           ),
                         );
-                        downloadNotifier.startDownload(
+                        await downloadNotifier.startDownload(
                           video: video,
                           streamInfo: opt,
                         );
@@ -92,12 +92,12 @@ class DownloadQualityDialog extends ConsumerWidget {
                     return ListTile(
                       title: Text(title),
                       subtitle: Text(opt.container.name),
-                      onTap: () {
+                      onTap: () async {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('$title indiriliyor...')),
                         );
-                        downloadNotifier.startDownload(
+                        await downloadNotifier.startDownload(
                           video: video,
                           streamInfo: opt,
                         );

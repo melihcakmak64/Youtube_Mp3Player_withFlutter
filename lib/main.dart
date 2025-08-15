@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
+import 'package:youtube_downloader/services/NotificationService.dart';
 import 'package:youtube_downloader/view/HomePage.dart';
 
 void main() async {
@@ -9,6 +10,8 @@ void main() async {
   await PermissionHandler.ensurePermissions();
   ForegroundServiceManager.init();
   await ForegroundServiceManager.start();
+  await NotificationService.init();
+
   runApp(ProviderScope(child: const MainApp()));
 }
 

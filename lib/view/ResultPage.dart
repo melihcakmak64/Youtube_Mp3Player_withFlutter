@@ -44,7 +44,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void dispose() {
     scrollController.removeListener(_scrollListener);
     scrollController.dispose();
-    ref.read(downloadControllerProvider.notifier).disposeForegroundTask();
+    // ref.read(downloadControllerProvider.notifier).disposeForegroundTask();
     super.dispose();
   }
 

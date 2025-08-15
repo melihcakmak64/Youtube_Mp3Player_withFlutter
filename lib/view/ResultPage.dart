@@ -21,7 +21,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   @override
   void initState() {
     super.initState();
-    FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
     scrollController = ScrollController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -45,16 +44,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void dispose() {
     scrollController.removeListener(_scrollListener);
     scrollController.dispose();
-    FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
+    ref.read(downloadControllerProvider.notifier).disposeForegroundTask();
     super.dispose();
-  }
-
-  void _onReceiveTaskData(Object data) {
-    if (data is Map) {
-      final progress = data['progress'] as double;
-      print(progress);
-      // ref.read(counterProvider.notifier).updateFromTask(data);
-    }
   }
 
   @override

@@ -30,7 +30,6 @@ class MyTaskHandler extends TaskHandler {
     if (data is Map && data['action'] == 'download') {
       final String url = data['url'];
       final String fileName = data['fileName'];
-      // final int totalBytes = data['totalBytes'];
       final int itag = data['itag'];
 
       final manifest = await youtubeService.youtube.videos.streamsClient
@@ -52,11 +51,20 @@ class MyTaskHandler extends TaskHandler {
           // UI tarafına progress gönder
           FlutterForegroundTask.updateService(
             notificationTitle: 'Foreground Task',
-            notificationText: '$progress',
+            notificationText: '${(progress * 100).toStringAsFixed(1)}%',
           );
-          FlutterForegroundTask.sendDataToMain({'progress': progress});
+          FlutterForegroundTask.sendDataToMain({
+            'url': url,
+            'progress': progress,
+          });
         },
       );
+
+      FlutterForegroundTask.sendDataToMain({
+        'url': url,
+        'status': 'done',
+        'path': file.path,
+      });
 
       await SharedPreferencesService.addFile('downloadedVideos', {
         'url': url,

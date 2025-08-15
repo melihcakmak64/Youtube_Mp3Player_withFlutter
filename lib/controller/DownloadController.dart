@@ -17,7 +17,42 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
   DownloadController({
     required this.downloadService,
     required this.youtubeService,
-  }) : super({});
+  }) : super({}) {
+    FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
+  }
+
+  void disposeForegroundTask() {
+    FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
+  }
+
+  void _onReceiveTaskData(Object data) {
+    if (data is Map) {
+      final url = data['url'] as String?;
+      final progress = (data['progress'] as num?)?.toDouble();
+
+      if (url != null && progress != null) {
+        updateState(
+          url,
+          status: DownloadStatus.downloading,
+          progress: progress,
+        );
+      }
+
+      if (data['status'] == 'done') {
+        final path = data['path'] as String?;
+        updateState(
+          url!,
+          status: DownloadStatus.downloaded,
+          progress: 1,
+          path: path,
+        );
+      }
+
+      if (data['status'] == 'failed') {
+        updateState(url!, status: DownloadStatus.failed);
+      }
+    }
+  }
 
   /// Kayıtlı dosyaları yükler, yoksa listeden siler
   Future<void> loadSavedDownloads() async {
@@ -53,16 +88,8 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     try {
       if (!await _hasStoragePermission()) {
         await PermissionHandler.ensurePermissions();
-
         return;
       }
-
-      updateState(
-        videoUrl,
-        status: DownloadStatus.downloading,
-        progress: 0,
-        extension: streamInfo.container.name,
-      );
 
       FlutterForegroundTask.sendDataToTask({
         'action': 'download',
@@ -70,14 +97,6 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         'fileName': video.title.sanitize(),
         'itag': streamInfo.tag,
       });
-
-      /*updateState(
-        videoUrl,
-        status: DownloadStatus.downloaded,
-        progress: 1,
-        path: file.path,
-        extension: streamInfo.container.name,
-      ); */
     } catch (e) {
       updateState(videoUrl, status: DownloadStatus.failed);
     }

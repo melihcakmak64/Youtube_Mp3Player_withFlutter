@@ -24,6 +24,8 @@ class ForegroundServiceManager {
         allowWifiLock: true,
       ),
     );
+
+    FlutterForegroundTask.initCommunicationPort();
   }
 
   static Future<void> start() async {

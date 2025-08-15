@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
 import 'package:youtube_downloader/view/HomePage.dart';
 
 void main() async {
-  FlutterForegroundTask.initCommunicationPort();
   WidgetsFlutterBinding.ensureInitialized();
-
   await PermissionHandler.ensurePermissions();
-
+  ForegroundServiceManager.init();
+  await ForegroundServiceManager.start();
   runApp(ProviderScope(child: const MainApp()));
 }
 

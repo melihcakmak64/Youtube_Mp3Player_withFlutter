@@ -17,7 +17,9 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
   DownloadController({
     required this.downloadService,
     required this.youtubeService,
-  }) : super({}) {
+  }) : super({});
+
+  void startForegroundTask() {
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
   }
 

@@ -23,11 +23,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     super.initState();
     scrollController = ScrollController();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ForegroundServiceManager.init();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref
           .read(videoListControllerProvider.notifier)
           .searchVideos(widget.searchTerm);
+      ref.read(downloadControllerProvider.notifier).startForegroundTask();
     });
 
     scrollController.addListener(_scrollListener);

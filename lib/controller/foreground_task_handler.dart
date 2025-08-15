@@ -1,4 +1,5 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
@@ -57,13 +58,7 @@ class MyTaskHandler extends TaskHandler {
         extension: extension,
         totalBytes: totalBytes,
         onProgress: (progress) async {
-          // UI tarafına progress gönder
-          /* FlutterForegroundTask.updateService(
-            notificationTitle: 'Foreground Task',
-            notificationText: '${(progress * 100).toStringAsFixed(1)}%',
-          ); */
-
-          await NotificationService.showDownloadProgress(
+          NotificationService.showDownloadProgress(
             id: url.hashCode,
             title: fileName.sanitize(),
             progress: (progress * 100).toInt(),
@@ -73,6 +68,11 @@ class MyTaskHandler extends TaskHandler {
             'progress': progress,
           });
         },
+      );
+      NotificationService.showDownloadProgress(
+        id: url.hashCode,
+        title: fileName.sanitize(),
+        progress: 100,
       );
 
       FlutterForegroundTask.sendDataToMain({

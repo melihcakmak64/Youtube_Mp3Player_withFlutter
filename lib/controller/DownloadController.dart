@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
@@ -19,7 +20,8 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     required this.youtubeService,
   }) : super({});
 
-  void startForegroundTask() {
+  Future<void> startForegroundTask() async {
+    await ForegroundServiceManager.start();
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
   }
 
@@ -27,12 +29,12 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
     FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
   }
 
-  void _onReceiveTaskData(Object data) {
+  void _onReceiveTaskData(Object data) async {
     if (data is Map) {
       final url = data['url'] as String?;
       final progress = (data['progress'] as num?)?.toDouble();
 
-      if (url != null && progress != null) {
+      if (url != null && progress != null && data['status'] == 'downloading') {
         updateState(
           url,
           status: DownloadStatus.downloading,
@@ -91,6 +93,10 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       if (!await _hasStoragePermission()) {
         await PermissionHandler.ensurePermissions();
         return;
+      }
+      final isRunning = await FlutterForegroundTask.isRunningService;
+      if (!isRunning) {
+        startForegroundTask();
       }
 
       FlutterForegroundTask.sendDataToTask({

@@ -30,7 +30,8 @@ class ForegroundServiceManager {
 
   static Future<void> start() async {
     if (await FlutterForegroundTask.isRunningService) {
-      await FlutterForegroundTask.restartService();
+      return;
+      //await FlutterForegroundTask.restartService();
     } else {
       await FlutterForegroundTask.startService(
         serviceId: 256,

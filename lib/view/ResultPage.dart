@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/VideoListController.dart';
-import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/view/widgets/MusicCard.dart';
 import 'package:youtube_downloader/view/widgets/Slider.dart';
 
@@ -27,7 +25,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
       ref
           .read(videoListControllerProvider.notifier)
           .searchVideos(widget.searchTerm);
-      ref.read(downloadControllerProvider.notifier).startForegroundTask();
+      await ref.read(downloadControllerProvider.notifier).startForegroundTask();
     });
 
     scrollController.addListener(_scrollListener);
@@ -44,7 +42,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void dispose() {
     scrollController.removeListener(_scrollListener);
     scrollController.dispose();
-    // ref.read(downloadControllerProvider.notifier).disposeForegroundTask();
     super.dispose();
   }
 

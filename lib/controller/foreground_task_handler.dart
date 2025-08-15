@@ -5,12 +5,19 @@ import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
 
 @pragma('vm:entry-point')
 void startCallback() {
-  FlutterForegroundTask.setTaskHandler(MyTaskHandler());
+  FlutterForegroundTask.setTaskHandler(
+    MyTaskHandler(
+      downloadService: DownloadService(),
+      youtubeService: YoutubeExplodeService(),
+    ),
+  );
 }
 
 class MyTaskHandler extends TaskHandler {
-  final DownloadService downloadService = DownloadService();
-  final YoutubeExplodeService youtubeService = YoutubeExplodeService();
+  final DownloadService downloadService;
+  final YoutubeExplodeService youtubeService;
+  MyTaskHandler({required this.downloadService, required this.youtubeService});
+
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     FlutterForegroundTask.updateService(

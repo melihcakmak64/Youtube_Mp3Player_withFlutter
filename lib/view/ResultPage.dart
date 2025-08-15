@@ -50,7 +50,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   void _onReceiveTaskData(Object data) {
-    if (data is int) {
+    if (data is Map) {
+      final progress = data['progress'] as double;
+      print(progress);
       // ref.read(counterProvider.notifier).updateFromTask(data);
     }
   }

@@ -64,36 +64,20 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         extension: streamInfo.container.name,
       );
 
-      final stream = youtubeService.youtube.videos.streamsClient.get(
-        streamInfo,
-      );
-
-      FlutterForegroundTask.sendDataToTask(stream);
-
-      final file = await downloadService.saveStream(
-        stream: stream,
-        fileName: video.title.sanitize(),
-        extension: streamInfo.container.name,
-        totalBytes: streamInfo.size.totalBytes,
-        onProgress: (progress) async {
-          updateState(videoUrl, progress: progress);
-        },
-      );
-
-      await SharedPreferencesService.addFile('downloadedVideos', {
-        'url': video.url,
-        'extension': streamInfo.container.name,
-        'title': video.title.sanitize(),
-        'path': file.path,
+      FlutterForegroundTask.sendDataToTask({
+        'action': 'download',
+        'url': videoUrl,
+        'fileName': video.title.sanitize(),
+        'itag': streamInfo.tag,
       });
 
-      updateState(
+      /*updateState(
         videoUrl,
         status: DownloadStatus.downloaded,
         progress: 1,
         path: file.path,
         extension: streamInfo.container.name,
-      );
+      ); */
     } catch (e) {
       updateState(videoUrl, status: DownloadStatus.failed);
     }

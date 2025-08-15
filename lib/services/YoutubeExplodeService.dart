@@ -37,6 +37,8 @@ class YoutubeExplodeService {
 
   Future<List<StreamInfo>> getAllQualityOptions(String url) async {
     final manifest = await youtube.videos.streamsClient.getManifest(url);
+    print("deneme");
+    print(manifest.audioOnly.first.tag);
 
     final audioList = manifest.audioOnly
         .where((a) => a.container.name == 'mp4')

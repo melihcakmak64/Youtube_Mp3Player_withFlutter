@@ -2,6 +2,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
+import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
 import 'package:youtube_downloader/services/NotificationService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
@@ -40,20 +41,15 @@ class MyTaskHandler extends TaskHandler {
     if (data is Map && data['action'] == 'download') {
       final String url = data['url'];
       final String fileName = data['fileName'];
-      final int itag = data['itag'];
-
-      final manifest = await youtubeService.youtube.videos.streamsClient
-          .getManifest(url);
-      final streamInfo = manifest.streams.firstWhere((s) => s.tag == itag);
-      final stream = youtubeService.youtube.videos.streamsClient.get(
-        streamInfo,
-      );
-
-      final String extension = streamInfo.container.name;
-      final int totalBytes = streamInfo.size.totalBytes;
+      final String extension = data['extension'];
+      final String stream = data['stream'];
+      final int totalBytes = data['totalBytes'];
+      final convertedStream = stringToStream(stream);
+      print("geldi");
+      print(convertedStream);
 
       final file = await downloadService.saveStream(
-        stream: stream,
+        stream: convertedStream,
         fileName: fileName,
         extension: extension,
         totalBytes: totalBytes,

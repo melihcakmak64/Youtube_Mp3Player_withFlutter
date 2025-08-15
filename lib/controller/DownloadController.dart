@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
+import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
@@ -97,12 +98,17 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       if (!isRunning) {
         startForegroundTask();
       }
-
+      final stream = youtubeService.youtube.videos.streamsClient.get(
+        streamInfo,
+      );
+      final convertedStream = await streamToString(stream);
       FlutterForegroundTask.sendDataToTask({
         'action': 'download',
         'url': videoUrl,
+        'stream': convertedStream,
         'fileName': video.title.sanitize(),
-        'itag': streamInfo.tag,
+        'extension': streamInfo.container.name,
+        'totalBytes': streamInfo.size.totalBytes,
       });
     } catch (e) {
       updateState(videoUrl, status: DownloadStatus.failed);

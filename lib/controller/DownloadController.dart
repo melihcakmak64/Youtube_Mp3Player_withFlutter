@@ -4,7 +4,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
-import 'package:youtube_downloader/services/NotificationService.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
@@ -75,12 +74,6 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         totalBytes: streamInfo.size.totalBytes,
         onProgress: (progress) async {
           updateState(videoUrl, progress: progress);
-
-          await NotificationService.showDownloadProgress(
-            id: videoUrl.hashCode,
-            title: video.title.sanitize(),
-            progress: (progress * 100).toInt(),
-          );
         },
       );
 
@@ -98,14 +91,7 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
         path: file.path,
         extension: streamInfo.container.name,
       );
-
-      await NotificationService.showDownloadProgress(
-        id: videoUrl.hashCode,
-        title: video.title.sanitize(),
-        progress: 100,
-      );
     } catch (e) {
-      await NotificationService.cancel(videoUrl.hashCode);
       updateState(videoUrl, status: DownloadStatus.failed);
     }
   }
@@ -128,7 +114,6 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
           'downloadedVideos',
           video.url,
         );
-        await NotificationService.cancel(video.url.hashCode);
         updateState(
           video.url,
           status: DownloadStatus.notDownloaded,
@@ -138,7 +123,6 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       }
     } else {
       await SharedPreferencesService.removeFile('downloadedVideos', video.url);
-      await NotificationService.cancel(video.url.hashCode);
       updateState(
         video.url,
         status: DownloadStatus.notDownloaded,

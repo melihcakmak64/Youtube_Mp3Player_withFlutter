@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
-import 'package:youtube_downloader/services/NotificationService.dart';
 import 'package:youtube_downloader/view/ExamplePage.dart';
 
 void main() async {
@@ -10,7 +9,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await PermissionHandler.ensurePermissions();
-  await NotificationService.init();
 
   runApp(ProviderScope(child: const MainApp()));
 }

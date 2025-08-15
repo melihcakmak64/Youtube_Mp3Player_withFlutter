@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/foreground_service_manager.dart';
-import 'package:youtube_downloader/core/PermissionHandler.dart';
 import 'package:youtube_downloader/view/counterProvider.dart';
 
 class ExamplePage extends ConsumerStatefulWidget {
@@ -19,7 +18,6 @@ class _ExamplePageState extends ConsumerState<ExamplePage> {
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await PermissionHandler.ensurePermissions();
       ForegroundServiceManager.init();
     });
   }

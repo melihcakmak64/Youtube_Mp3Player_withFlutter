@@ -84,7 +84,7 @@ class DownloadQualityDialog extends ConsumerWidget {
                     String title = "";
                     if (opt is VideoOnlyStreamInfo) {
                       title =
-                          '${opt.qualityLabel} + ${opt.framerate.framesPerSecond} (${opt.size.totalMegaBytes.toStringAsFixed(2)} MB)';
+                          '${opt.qualityLabel} (${opt.size.totalMegaBytes.toStringAsFixed(2)} MB)';
                     }
                     return ListTile(
                       title: Text(title),

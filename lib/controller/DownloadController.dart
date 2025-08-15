@@ -98,17 +98,17 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       if (!isRunning) {
         startForegroundTask();
       }
-      final stream = youtubeService.youtube.videos.streamsClient.get(
-        streamInfo,
-      );
-      final convertedStream = await streamToString(stream);
+      print("-------------");
+
+      print(streamInfo.toJson());
+
+      print("---------------");
+
       FlutterForegroundTask.sendDataToTask({
         'action': 'download',
         'url': videoUrl,
-        'stream': convertedStream,
         'fileName': video.title.sanitize(),
-        'extension': streamInfo.container.name,
-        'totalBytes': streamInfo.size.totalBytes,
+        'itag': streamInfo.tag,
       });
     } catch (e) {
       updateState(videoUrl, status: DownloadStatus.failed);

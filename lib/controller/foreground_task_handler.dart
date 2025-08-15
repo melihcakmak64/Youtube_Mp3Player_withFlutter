@@ -1,5 +1,4 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:youtube_downloader/controller/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/helper/helper.dart';

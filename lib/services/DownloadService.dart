@@ -35,6 +35,7 @@ class DownloadService {
 
     await fileSink.flush();
     await fileSink.close();
+    onProgress?.call(1);
     return file;
   }
 

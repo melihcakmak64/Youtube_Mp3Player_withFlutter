@@ -98,11 +98,6 @@ class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
       if (!isRunning) {
         startForegroundTask();
       }
-      print("-------------");
-
-      print(streamInfo.toJson());
-
-      print("---------------");
 
       FlutterForegroundTask.sendDataToTask({
         'action': 'download',

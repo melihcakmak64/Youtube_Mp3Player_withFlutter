@@ -11,15 +11,22 @@ class PermissionHandler {
     if (Platform.isAndroid) {
       AndroidDeviceInfo android = await plugin.androidInfo;
 
-      // Android 13'ten önce
-      if (android.version.sdkInt < 33) {
+      // Android 11 ve sonrası
+      if (android.version.sdkInt >= 30) {
+        if (!await Permission.manageExternalStorage.isGranted) {
+          await Permission.manageExternalStorage.request();
+        }
+      } else {
+        // Android 10 ve altı
         if (!await Permission.storage.isGranted) {
           await Permission.storage.request();
         } else if (await Permission.storage.isPermanentlyDenied) {
           await openAppSettings();
         }
-      } else {
-        // Android 13 ve sonrası için audio ve notification
+      }
+
+      // Android 13 ve sonrası için audio ve notification izinleri
+      if (android.version.sdkInt >= 33) {
         if (!await Permission.audio.isGranted) {
           await Permission.audio.request();
         } else if (await Permission.audio.isPermanentlyDenied) {

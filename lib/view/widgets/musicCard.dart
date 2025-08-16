@@ -75,27 +75,10 @@ class MusicCard extends ConsumerWidget {
                 } else {
                   return IconButton(
                     icon: const Icon(Icons.download),
-                    onPressed: () async {
-                      final options = await ref
-                          .read(downloadControllerProvider.notifier)
-                          .youtubeService
-                          .getAllQualityOptions(video.url);
-
-                      if (options.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Kalite seçenekleri bulunamadı'),
-                          ),
-                        );
-                        return;
-                      }
-
+                    onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (ctx) => DownloadQualityDialog(
-                          video: video,
-                          options: options,
-                        ),
+                        builder: (ctx) => DownloadQualityDialog(video: video),
                       );
                     },
                   );

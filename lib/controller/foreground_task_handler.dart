@@ -1,11 +1,9 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
-import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_downloader/services/DownloadService.dart';
 import 'package:youtube_downloader/services/NotificationService.dart';
 import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 @pragma('vm:entry-point')
 void startCallback() {

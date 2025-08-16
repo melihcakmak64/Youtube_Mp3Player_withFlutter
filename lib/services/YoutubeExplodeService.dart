@@ -38,13 +38,32 @@ class YoutubeExplodeService {
   Future<List<StreamInfo>> getAllQualityOptions(String url) async {
     final manifest = await youtube.videos.streamsClient.getManifest(url);
 
+    // Ses listesi (MP4 formatı)
     final audioList = manifest.audioOnly
         .where((a) => a.container.name == 'mp4')
         .toList();
 
-    final videoList = manifest.video
+    // Video listesi (MP4 formatı)
+    final rawVideoList = manifest.video
         .where((v) => v.container.name == 'mp4')
         .toList();
+
+    print(rawVideoList);
+
+    // Aynı çözünürlükteki streamlerden sadece en yüksek bitrate'i al
+    Map<int, VideoOnlyStreamInfo> videoMap = {}; // key = height
+    for (var v in rawVideoList) {
+      if (v is VideoOnlyStreamInfo) {
+        final current = videoMap[v.videoResolution.height];
+        if (current == null ||
+            v.bitrate.kiloBitsPerSecond > current.bitrate.kiloBitsPerSecond) {
+          videoMap[v.videoResolution.height] = v;
+        }
+      }
+    }
+
+    // Filtrelenmiş video listesi
+    final videoList = [...videoMap.values];
 
     return [...audioList, ...videoList];
   }

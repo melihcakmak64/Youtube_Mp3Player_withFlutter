@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/controller/VideoListController.dart';
+import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
 
@@ -54,18 +55,18 @@ class _DownloadQualityDialogState extends ConsumerState<DownloadQualityDialog> {
 
     final audioOptions = options.whereType<AudioOnlyStreamInfo>().toList();
     final videoOptions = options
-        .where((e) => e is VideoOnlyStreamInfo || e is MuxedStreamInfo)
+        .where((e) => e is VideoOnlyStreamInfo)
         .toList();
 
     return AlertDialog(
-      title: const Text('İndirme Kalitesi Seç'),
+      title: const Text('Choose Download Quality'),
       content: SizedBox(
-        width: double.minPositive,
+        width: double.maxFinite,
         height: 500,
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : error != null
-            ? Center(child: Text("Hata: $error"))
+            ? Center(child: Text("Error: $error"))
             : SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -73,7 +74,7 @@ class _DownloadQualityDialogState extends ConsumerState<DownloadQualityDialog> {
                   children: [
                     if (audioOptions.isNotEmpty) ...[
                       const Text(
-                        'Ses Kalitesi',
+                        'Sound Quality',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       ListView.builder(
@@ -84,7 +85,7 @@ class _DownloadQualityDialogState extends ConsumerState<DownloadQualityDialog> {
                           final opt = audioOptions[index];
                           return ListTile(
                             title: Text(
-                              '${opt.bitrate.kiloBitsPerSecond} kbps • ${opt.container.name.toUpperCase()}',
+                              'Standart ${opt.container.name.toUpperCase()} (${opt.bitrate.kiloBitsPerSecond.round()}k)',
                             ),
                             subtitle: Text(
                               '${opt.size.totalMegaBytes.toStringAsFixed(2)} MB',
@@ -110,7 +111,7 @@ class _DownloadQualityDialogState extends ConsumerState<DownloadQualityDialog> {
                     if (videoOptions.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       const Text(
-                        'Video Kalitesi',
+                        'Video Quality',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       ListView.builder(
@@ -121,15 +122,13 @@ class _DownloadQualityDialogState extends ConsumerState<DownloadQualityDialog> {
                           final opt = videoOptions[index];
                           String title = "";
                           if (opt is VideoOnlyStreamInfo) {
-                            title =
-                                '${opt.qualityLabel} (${opt.size.totalMegaBytes.toStringAsFixed(2)} MB)';
-                          } else if (opt is MuxedStreamInfo) {
-                            title =
-                                '${opt.videoQualityLabel} (${opt.size.totalMegaBytes.toStringAsFixed(2)} MB)';
+                            title = getVideoQualityLabel(opt);
                           }
                           return ListTile(
                             title: Text(title),
-                            subtitle: Text(opt.container.name),
+                            subtitle: Text(
+                              '${opt.size.totalMegaBytes.toStringAsFixed(2)} MB',
+                            ),
                             onTap: () async {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(

@@ -1,65 +1,43 @@
 import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new/return_code.dart';
+import 'package:ffmpeg_kit_flutter_new_min/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_min/return_code.dart';
 
-class FFmpegService {
-  /// MP4 ses dosyasını MP3'e çevirir
-  static Future<bool> convertMp4ToMp3({
+class VideoService {
+  /// MP4'ten MP3'e dönüştürme
+  static Future<File> convertMp4ToMp3({
     required String inputPath,
-    required String outputPath,
+    required String outputPath, // artık output path veriyoruz
   }) async {
-    try {
-      if (!File(inputPath).existsSync()) {
-        throw Exception("Input file not found: $inputPath");
-      }
+    final command = '-i "$inputPath" -vn -acodec libmp3lame -y "$outputPath"';
 
-      // MP4 -> MP3
-      final command = '-i "$inputPath" -q:a 0 -map a "$outputPath"';
-      final session = await FFmpegKit.execute(command);
-      final returnCode = await session.getReturnCode();
+    final session = await FFmpegKit.execute(command);
+    final returnCode = await session.getReturnCode();
 
-      return returnCode?.isValueSuccess() ?? false;
-    } catch (e) {
-      print("convertMp4ToMp3 error: $e");
-      return false;
+    if (ReturnCode.isSuccess(returnCode)) {
+      return File(outputPath);
+    } else {
+      throw Exception("MP3 conversion failed with code: $returnCode");
     }
   }
 
-  /// Video + Audio dosyasını birleştirir (MP4 çıkışı)
-  static Future<bool> mergeAudioVideo({
+  /// Video ve audio birleştirme (MP4)
+  static Future<File> mergeAudioVideo({
     required String videoPath,
     required String audioPath,
-    required String outputPath,
+    required String outputPath, // artık output path veriyoruz
   }) async {
-    try {
-      if (!File(videoPath).existsSync()) {
-        throw Exception("Video file not found: $videoPath");
-      }
-      if (!File(audioPath).existsSync()) {
-        throw Exception("Audio file not found: $audioPath");
-      }
+    // Video stream'i olduğu gibi al, audio stream'i AAC'e çevir
+    final command =
+        '-i "$videoPath" -i "$audioPath" -c:v copy -c:a aac -y "$outputPath"';
 
-      final command =
-          '-i "$videoPath" -i "$audioPath" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 "$outputPath"';
-      final session = await FFmpegKit.execute(command);
-      final returnCode = await session.getReturnCode();
+    final session = await FFmpegKit.execute(command);
+    final returnCode = await session.getReturnCode();
 
-      return returnCode?.isValueSuccess() ?? false;
-    } catch (e) {
-      print("mergeAudioVideo error: $e");
-      return false;
-    }
-  }
-
-  static Future<bool> isFFmpegAvailable() async {
-    try {
-      final session = await FFmpegKit.execute('-version');
-      final returnCode = await session.getReturnCode();
-      return returnCode != null && ReturnCode.isSuccess(returnCode);
-    } catch (e) {
-      print("FFmpeg availability check failed: $e");
-      return false;
+    if (ReturnCode.isSuccess(returnCode)) {
+      return File(outputPath);
+    } else {
+      throw Exception("Video + Audio merge failed with code: $returnCode");
     }
   }
 }

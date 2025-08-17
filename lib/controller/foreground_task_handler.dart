@@ -4,7 +4,6 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/services/download_service.dart';
-import 'package:youtube_downloader/services/ffpmeg_service.dart';
 import 'package:youtube_downloader/services/notification_service.dart';
 import 'package:youtube_downloader/services/youtube_explode_service.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -46,22 +45,39 @@ class MyTaskHandler extends TaskHandler {
       final int itag = data['itag'];
       final manifest = await youtubeService.youtube.videos.streamsClient
           .getManifest(url);
-      final streamInfo = manifest.streams.firstWhere((s) => s.tag == itag);
-      final stream = youtubeService.youtube.videos.streamsClient.get(
-        streamInfo,
-      );
+      final isVideo = true;
 
-      final String extension = streamInfo.container.name;
-      final int totalBytes = streamInfo.size.totalBytes;
+      final audioStreamInfo = isVideo
+          ? manifest.audioOnly.withHighestBitrate()
+          : manifest.streams.firstWhere((s) => s.tag == itag);
+      final videoStreamInfo = manifest.streams.firstWhere((s) => s.tag == itag);
 
-      File file;
+      if (videoStreamInfo == null && audioStreamInfo == null) return;
 
-      // 🔹 Audio mu Video mu kontrol et
-      if (streamInfo is AudioOnlyStreamInfo) {
-        file = await downloadService.downloadAudio(
-          stream: stream,
+      late final File finalFile;
+
+      if (videoStreamInfo != null) {
+        // Video-only varsa, audio ile birleştir
+        final videoStream = youtubeService.youtube.videos.streamsClient.get(
+          videoStreamInfo,
+        );
+        Stream<List<int>>? audioStream;
+
+        if (audioStreamInfo != null) {
+          audioStream = youtubeService.youtube.videos.streamsClient.get(
+            audioStreamInfo,
+          );
+        }
+
+        final totalVideoBytes = videoStreamInfo.size.totalBytes;
+        final totalAudioBytes = audioStreamInfo?.size.totalBytes ?? 0;
+
+        finalFile = await downloadService.downloadVideo(
+          videoStream: videoStream,
+          audioStream: audioStream ?? Stream.empty(),
           fileName: fileName,
-          totalBytes: totalBytes,
+          videoBytes: totalVideoBytes,
+          audioBytes: totalAudioBytes,
           onProgress: (progress) async {
             NotificationService.showDownloadProgress(
               id: url.hashCode,
@@ -75,11 +91,17 @@ class MyTaskHandler extends TaskHandler {
             });
           },
         );
-      } else {
-        file = await downloadService.downloadVideo(
-          stream: stream,
+      } else if (audioStreamInfo != null) {
+        // Sadece audio varsa MP3 indir
+        final audioStream = youtubeService.youtube.videos.streamsClient.get(
+          audioStreamInfo,
+        );
+        final totalAudioBytes = audioStreamInfo.size.totalBytes;
+
+        finalFile = await downloadService.downloadAudio(
+          stream: audioStream,
           fileName: fileName,
-          totalBytes: totalBytes,
+          totalBytes: totalAudioBytes,
           onProgress: (progress) async {
             NotificationService.showDownloadProgress(
               id: url.hashCode,
@@ -104,14 +126,14 @@ class MyTaskHandler extends TaskHandler {
       FlutterForegroundTask.sendDataToMain({
         'url': url,
         'status': 'done',
-        'path': file.path,
+        'path': finalFile.path,
       });
 
       await SharedPreferencesService.addFile('downloadedVideos', {
         'url': url,
-        'extension': extension,
+        'extension': "mp4",
         'title': fileName,
-        'path': file.path,
+        'path': finalFile.path,
       });
     }
   }

@@ -48,8 +48,6 @@ class YoutubeExplodeService {
         .where((v) => v.container.name == 'mp4')
         .toList();
 
-    print(rawVideoList);
-
     // Aynı çözünürlükteki streamlerden sadece en yüksek bitrate'i al
     Map<int, VideoOnlyStreamInfo> videoMap = {}; // key = height
     for (var v in rawVideoList) {

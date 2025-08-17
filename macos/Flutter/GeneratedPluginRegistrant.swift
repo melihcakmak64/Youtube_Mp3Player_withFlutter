@@ -7,7 +7,7 @@ import Foundation
 
 import audio_session
 import device_info_plus
-import ffmpeg_kit_flutter_new
+import ffmpeg_kit_flutter_new_min
 import flutter_local_notifications
 import just_audio
 import path_provider_foundation

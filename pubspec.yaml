@@ -45,6 +45,7 @@ dependencies:
   flutter_riverpod: ^2.6.1
   flutter_foreground_task: ^9.1.0
   flutter_local_notifications: ^19.4.0
+  ffmpeg_kit_flutter_new: ^3.2.0
 
 dev_dependencies:
   flutter_test:

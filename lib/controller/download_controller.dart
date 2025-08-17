@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
-import 'package:youtube_downloader/services/DownloadService.dart';
+import 'package:youtube_downloader/services/download_service.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
-import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
+import 'package:youtube_downloader/services/youtube_explode_service.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {

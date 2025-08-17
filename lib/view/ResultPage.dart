@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/VideoListController.dart';
-import 'package:youtube_downloader/view/widgets/MusicCard.dart';
-import 'package:youtube_downloader/view/widgets/Slider.dart';
+import 'package:youtube_downloader/controller/video_list_controller.dart';
+import 'package:youtube_downloader/view/widgets/music_card_widget.dart';
+import 'package:youtube_downloader/view/widgets/slider_widget.dart';
 
 class ResultPage extends ConsumerStatefulWidget {
   final String searchTerm;

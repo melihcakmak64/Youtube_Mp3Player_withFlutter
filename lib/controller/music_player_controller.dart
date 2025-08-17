@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/model/MusicPlayerState.dart';
 import 'package:youtube_downloader/controller/controller_initializers.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
-import 'package:youtube_downloader/services/MusicPlayerService.dart';
-import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
+import 'package:youtube_downloader/services/music_player_service.dart';
+import 'package:youtube_downloader/services/youtube_explode_service.dart';
 
 class MusicPlayerNotifier extends StateNotifier<MusicPlayerState> {
   final MusicPlayerService player;

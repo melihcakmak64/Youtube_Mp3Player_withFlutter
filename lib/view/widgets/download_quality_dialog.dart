@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/VideoListController.dart';
+import 'package:youtube_downloader/controller/video_list_controller.dart';
 import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
@@ -54,9 +54,7 @@ class _DownloadQualityDialogState extends ConsumerState<DownloadQualityDialog> {
     final downloadNotifier = ref.read(downloadControllerProvider.notifier);
 
     final audioOptions = options.whereType<AudioOnlyStreamInfo>().toList();
-    final videoOptions = options
-        .where((e) => e is VideoOnlyStreamInfo)
-        .toList();
+    final videoOptions = options.whereType<VideoOnlyStreamInfo>().toList();
 
     return AlertDialog(
       title: const Text('Choose Download Quality'),
@@ -121,9 +119,7 @@ class _DownloadQualityDialogState extends ConsumerState<DownloadQualityDialog> {
                         itemBuilder: (context, index) {
                           final opt = videoOptions[index];
                           String title = "";
-                          if (opt is VideoOnlyStreamInfo) {
-                            title = getVideoQualityLabel(opt);
-                          }
+                          title = getVideoQualityLabel(opt);
                           return ListTile(
                             title: Text(title),
                             subtitle: Text(

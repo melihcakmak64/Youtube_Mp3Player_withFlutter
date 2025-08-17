@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/DownloadController.dart';
 import 'package:youtube_downloader/controller/controller_initializers.dart';
+import 'package:youtube_downloader/controller/download_controller.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
-import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
+import 'package:youtube_downloader/services/youtube_explode_service.dart';
 
 class VideoListController extends StateNotifier<VideoListState> {
   final YoutubeExplodeService youtubeService;

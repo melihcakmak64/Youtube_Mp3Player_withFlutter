@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
-import 'package:youtube_downloader/services/DownloadService.dart';
-import 'package:youtube_downloader/services/NotificationService.dart';
-import 'package:youtube_downloader/services/YoutubeExplodeService.dart';
+import 'package:youtube_downloader/services/download_service.dart';
+import 'package:youtube_downloader/services/ffpmeg_service.dart';
+import 'package:youtube_downloader/services/notification_service.dart';
+import 'package:youtube_downloader/services/youtube_explode_service.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 @pragma('vm:entry-point')
 void startCallback() {
@@ -50,24 +54,47 @@ class MyTaskHandler extends TaskHandler {
       final String extension = streamInfo.container.name;
       final int totalBytes = streamInfo.size.totalBytes;
 
-      final file = await downloadService.saveStream(
-        stream: stream,
-        fileName: fileName,
-        extension: extension,
-        totalBytes: totalBytes,
-        onProgress: (progress) async {
-          NotificationService.showDownloadProgress(
-            id: url.hashCode,
-            title: fileName.sanitize(),
-            progress: (progress * 100).toInt(),
-          );
-          FlutterForegroundTask.sendDataToMain({
-            'url': url,
-            'progress': progress,
-            'status': "downloading",
-          });
-        },
-      );
+      File file;
+
+      // 🔹 Audio mu Video mu kontrol et
+      if (streamInfo is AudioOnlyStreamInfo) {
+        file = await downloadService.downloadAudio(
+          stream: stream,
+          fileName: fileName,
+          totalBytes: totalBytes,
+          onProgress: (progress) async {
+            NotificationService.showDownloadProgress(
+              id: url.hashCode,
+              title: fileName.sanitize(),
+              progress: (progress * 100).toInt(),
+            );
+            FlutterForegroundTask.sendDataToMain({
+              'url': url,
+              'progress': progress,
+              'status': "downloading",
+            });
+          },
+        );
+      } else {
+        file = await downloadService.downloadVideo(
+          stream: stream,
+          fileName: fileName,
+          totalBytes: totalBytes,
+          onProgress: (progress) async {
+            NotificationService.showDownloadProgress(
+              id: url.hashCode,
+              title: fileName.sanitize(),
+              progress: (progress * 100).toInt(),
+            );
+            FlutterForegroundTask.sendDataToMain({
+              'url': url,
+              'progress': progress,
+              'status': "downloading",
+            });
+          },
+        );
+      }
+
       NotificationService.showDownloadProgress(
         id: url.hashCode,
         title: fileName.sanitize(),

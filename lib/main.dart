@@ -1,8 +1,9 @@
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/foreground_service_manager.dart';
+import 'package:youtube_downloader/services/foreground_service_manager.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
-import 'package:youtube_downloader/services/NotificationService.dart';
+import 'package:youtube_downloader/services/notification_service.dart';
 import 'package:youtube_downloader/view/HomePage.dart';
 
 void main() async {
@@ -11,6 +12,7 @@ void main() async {
   ForegroundServiceManager.init();
   await ForegroundServiceManager.start();
   await NotificationService.init();
+  await FFmpegKitConfig.init();
 
   runApp(ProviderScope(child: const MainApp()));
 }

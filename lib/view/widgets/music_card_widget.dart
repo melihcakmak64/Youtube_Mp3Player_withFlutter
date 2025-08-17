@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/DownloadController.dart';
-import 'package:youtube_downloader/controller/MusicPlayerController.dart';
-import 'package:youtube_downloader/controller/VideoListController.dart';
+import 'package:youtube_downloader/controller/download_controller.dart';
+import 'package:youtube_downloader/controller/music_player_controller.dart';
+import 'package:youtube_downloader/controller/video_list_controller.dart';
 import 'package:youtube_downloader/helper/helper.dart';
 import 'package:youtube_downloader/model/ResponseModel.dart';
-import 'package:youtube_downloader/view/widgets/downloadQualityDialog.dart';
+import 'package:youtube_downloader/view/widgets/download_quality_dialog.dart';
 
 class MusicCard extends ConsumerWidget {
   final ResponseModel video;

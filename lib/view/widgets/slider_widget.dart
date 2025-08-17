@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/MusicPlayerController.dart';
+import 'package:youtube_downloader/controller/music_player_controller.dart';
 import 'package:youtube_downloader/helper/helper.dart';
 
 class MusicSlider extends ConsumerWidget {

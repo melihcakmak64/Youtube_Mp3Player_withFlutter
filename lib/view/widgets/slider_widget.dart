@@ -11,7 +11,7 @@ class MusicSlider extends ConsumerWidget {
     final musicPlayerState = ref.watch(musicPlayerProvider);
     final musicPlayerNotifier = ref.read(musicPlayerProvider.notifier);
 
-    if (musicPlayerState.model == null) return const SizedBox.shrink();
+    if (musicPlayerState.isPlaying == false) return const SizedBox.shrink();
 
     return Positioned(
       bottom: 0,

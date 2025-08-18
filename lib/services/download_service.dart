@@ -15,11 +15,11 @@ class DownloadService {
     final path = await getDownloadFolderPath();
 
     // Geçici MP4 dosyası
-    final tempMp4 = File('$path/$fileName.temp_audio.mp4');
-    if (await tempMp4.exists()) await tempMp4.delete();
+    final file = File('$path/$fileName.mp3');
+    if (await file.exists()) await file.delete();
 
     // Dosyayı indir
-    final fileSink = tempMp4.openWrite();
+    final fileSink = file.openWrite();
     int downloadedBytes = 0;
 
     await for (final data in stream) {
@@ -36,16 +36,7 @@ class DownloadService {
     await fileSink.close();
     onProgress?.call(1);
 
-    // FFmpeg ile MP3'e dönüştür
-    final mp3Path = '$path/$fileName.mp3';
-
-    final mp3File = await VideoService.convertMp4ToMp3(
-      inputPath: tempMp4.path,
-      outputPath: mp3Path,
-    );
-
-    await tempMp4.delete(); // Geçici dosyayı temizle
-    return mp3File;
+    return file;
   }
 
   /// Video ve audio stream’lerini indirip tek MP4 oluştur

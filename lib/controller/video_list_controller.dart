@@ -28,7 +28,6 @@ class VideoListController extends StateNotifier<VideoListState> {
     try {
       final results = await youtubeService.getNextPage();
       if (results.isNotEmpty) {
-        print(results);
         state = state.copyWith(videos: [...state.videos, ...results]);
       }
     } catch (e) {

@@ -6,6 +6,7 @@ import 'package:youtube_downloader/services/youtube_explode_service.dart';
 
 class VideoListController extends StateNotifier<VideoListState> {
   final YoutubeExplodeService youtubeService;
+  bool _isFetchingNext = false;
 
   VideoListController(this.youtubeService) : super(VideoListState());
 
@@ -17,6 +18,23 @@ class VideoListController extends StateNotifier<VideoListState> {
       state = state.copyWith(videos: results, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> getNextPage() async {
+    if (_isFetchingNext) return;
+
+    _isFetchingNext = true;
+    try {
+      final results = await youtubeService.getNextPage();
+      if (results.isNotEmpty) {
+        print(results);
+        state = state.copyWith(videos: [...state.videos, ...results]);
+      }
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    } finally {
+      _isFetchingNext = false;
     }
   }
 }

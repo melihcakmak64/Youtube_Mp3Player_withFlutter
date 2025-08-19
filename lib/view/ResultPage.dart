@@ -34,7 +34,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void _scrollListener() {
     if (scrollController.position.maxScrollExtent ==
         scrollController.position.pixels) {
-      //ref.read(videoListControllerProvider.notifier).getNextPage();
+      ref.read(videoListControllerProvider.notifier).getNextPage();
     }
   }
 

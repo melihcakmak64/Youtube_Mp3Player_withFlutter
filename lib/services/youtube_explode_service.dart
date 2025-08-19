@@ -3,11 +3,35 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class YoutubeExplodeService {
   final YoutubeExplode youtube = YoutubeExplode();
+  VideoSearchList? _lastSearchResult;
 
   /// Video arama
   Future<List<ResponseModel>> searchVideos(String query) async {
     final searchResult = await youtube.search(query);
+    _lastSearchResult = searchResult;
     return searchResult
+        .map(
+          (e) => ResponseModel(
+            id: e.id,
+            title: e.title,
+            description: e.description,
+            thumbnails: e.thumbnails,
+            duration: e.duration,
+            url: e.url,
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<ResponseModel>> getNextPage() async {
+    if (_lastSearchResult == null) return [];
+
+    final nextPage = await _lastSearchResult!.nextPage();
+    if (nextPage == null) return [];
+
+    _lastSearchResult = nextPage;
+
+    return nextPage
         .map(
           (e) => ResponseModel(
             id: e.id,

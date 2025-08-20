@@ -72,18 +72,19 @@ class YoutubeExplodeService {
         .where((v) => v.container.name == 'mp4')
         .toList();
 
-    // Aynı çözünürlükteki streamlerden sadece en yüksek bitrate'i al
-    Map<int, VideoOnlyStreamInfo> videoMap = {}; // key = height
+    List<VideoOnlyStreamInfo> videoList = [];
+
     for (var v in rawVideoList) {
-      final current = videoMap[v.videoResolution.height];
-      if (current == null ||
-          v.bitrate.kiloBitsPerSecond > current.bitrate.kiloBitsPerSecond) {
-        videoMap[v.videoResolution.height] = v;
+      if (videoList.isEmpty) {
+        videoList.add(v);
+      } else if (v.videoResolution.height ==
+              videoList.last.videoResolution.height &&
+          v.bitrate.bitsPerSecond > videoList.last.bitrate.bitsPerSecond) {
+        videoList.last = v;
+      } else {
+        videoList.add(v);
       }
     }
-
-    // Filtrelenmiş video listesi
-    final videoList = [...videoMap.values];
 
     return [...audioList, ...videoList];
   }

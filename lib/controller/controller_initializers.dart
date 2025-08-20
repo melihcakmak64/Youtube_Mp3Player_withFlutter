@@ -17,10 +17,10 @@ final downloadServiceProvider = Provider<DownloadService>((ref) {
   return DownloadService();
 });
 
-final qualityOptionsProvider = FutureProvider.family<List<StreamInfo>, String>((
-  ref,
-  url,
-) async {
-  final service = ref.read(downloadControllerProvider.notifier).youtubeService;
-  return service.getAllQualityOptions(url);
-});
+final qualityOptionsProvider = FutureProvider.autoDispose
+    .family<List<StreamInfo>, String>((ref, url) async {
+      final service = ref
+          .read(downloadControllerProvider.notifier)
+          .youtubeService;
+      return service.getAllQualityOptions(url);
+    });

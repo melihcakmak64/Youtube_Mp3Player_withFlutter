@@ -68,19 +68,17 @@ class YoutubeExplodeService {
         .toList();
 
     // Video listesi (MP4 formatı)
-    final rawVideoList = manifest.video
+    final rawVideoList = manifest.videoOnly
         .where((v) => v.container.name == 'mp4')
         .toList();
 
     // Aynı çözünürlükteki streamlerden sadece en yüksek bitrate'i al
     Map<int, VideoOnlyStreamInfo> videoMap = {}; // key = height
     for (var v in rawVideoList) {
-      if (v is VideoOnlyStreamInfo) {
-        final current = videoMap[v.videoResolution.height];
-        if (current == null ||
-            v.bitrate.kiloBitsPerSecond > current.bitrate.kiloBitsPerSecond) {
-          videoMap[v.videoResolution.height] = v;
-        }
+      final current = videoMap[v.videoResolution.height];
+      if (current == null ||
+          v.bitrate.kiloBitsPerSecond > current.bitrate.kiloBitsPerSecond) {
+        videoMap[v.videoResolution.height] = v;
       }
     }
 

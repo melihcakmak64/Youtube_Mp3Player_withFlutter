@@ -75,14 +75,13 @@ class YoutubeExplodeService {
     List<VideoOnlyStreamInfo> videoList = [];
 
     for (var v in rawVideoList) {
-      if (videoList.isEmpty) {
+      if (videoList.isEmpty ||
+          v.videoResolution.height != videoList.last.videoResolution.height) {
         videoList.add(v);
       } else if (v.videoResolution.height ==
               videoList.last.videoResolution.height &&
           v.bitrate.bitsPerSecond > videoList.last.bitrate.bitsPerSecond) {
         videoList.last = v;
-      } else {
-        videoList.add(v);
       }
     }
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/services/ffpmeg_service.dart';
 
 typedef ProgressCallback = void Function(double progress);
@@ -9,6 +10,7 @@ class DownloadService {
   Future<File> downloadAudio({
     required Stream<List<int>> stream,
     required String fileName,
+    required String url,
     required int totalBytes,
     ProgressCallback? onProgress,
   }) async {
@@ -36,6 +38,13 @@ class DownloadService {
     await fileSink.close();
     onProgress?.call(1);
 
+    await SharedPreferencesService.addFile('downloadedAudios', {
+      'url': url,
+      'extension': "mp3",
+      'title': fileName,
+      'path': file.path,
+    });
+
     return file;
   }
 
@@ -43,6 +52,7 @@ class DownloadService {
   Future<File> downloadVideo({
     required Stream<List<int>> videoStream,
     required Stream<List<int>> audioStream,
+    required String url,
     required String fileName,
     required int videoBytes,
     required int audioBytes,
@@ -99,6 +109,12 @@ class DownloadService {
     // Geçici dosyaları temizle
     await tempVideo.delete();
     await tempAudio.delete();
+    await SharedPreferencesService.addFile('downloadedVideos', {
+      'url': url,
+      'extension': "mp4",
+      'title': fileName,
+      'path': mergedFile.path,
+    });
     return mergedFile;
   }
 

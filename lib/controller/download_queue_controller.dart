@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:youtube_downloader/core/SharedPreferencesService.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/model/DownloadTask.dart';
 import 'package:youtube_downloader/services/download_service.dart';
@@ -69,6 +68,7 @@ class DownloadQueueManager {
         videoStream: videoStream,
         audioStream: audioStream,
         fileName: task.fileName,
+        url: task.url,
         videoBytes: totalVideoBytes,
         audioBytes: totalAudioBytes,
         onProgress: (progress) async {
@@ -96,13 +96,6 @@ class DownloadQueueManager {
         'status': 'done',
         'path': finalFile.path,
       });
-
-      await SharedPreferencesService.addFile('downloadedVideos', {
-        'url': task.url,
-        'extension': "mp4",
-        'title': task.fileName,
-        'path': finalFile.path,
-      });
     } else {
       // Sadece ses indir
       final audioStream = youtubeService.youtube.videos.streamsClient.get(
@@ -113,6 +106,7 @@ class DownloadQueueManager {
       final finalFile = await downloadService.downloadAudio(
         stream: audioStream,
         fileName: task.fileName,
+        url: task.url,
         totalBytes: totalAudioBytes,
         onProgress: (progress) async {
           NotificationService.showDownloadProgress(
@@ -137,13 +131,6 @@ class DownloadQueueManager {
       FlutterForegroundTask.sendDataToMain({
         'url': task.url,
         'status': 'done',
-        'path': finalFile.path,
-      });
-
-      await SharedPreferencesService.addFile('downloadedAudios', {
-        'url': task.url,
-        'extension': "mp3",
-        'title': task.fileName,
         'path': finalFile.path,
       });
     }

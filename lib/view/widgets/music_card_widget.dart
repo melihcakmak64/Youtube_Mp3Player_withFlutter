@@ -23,6 +23,9 @@ class MusicCard extends ConsumerWidget {
     return Card(
       child: ListTile(
         leading: FadeInImage.assetNetwork(
+          imageErrorBuilder: (context, error, stackTrace) {
+            return const Icon(Icons.broken_image, size: 50, color: Colors.grey);
+          },
           placeholder: 'assets/placeholder-image.png',
           image: video.thumbnails.mediumResUrl,
           fit: BoxFit.cover,

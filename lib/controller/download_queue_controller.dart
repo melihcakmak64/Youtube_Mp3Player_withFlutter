@@ -4,6 +4,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:youtube_downloader/core/StringExtensions.dart';
 import 'package:youtube_downloader/model/DownloadTask.dart';
 import 'package:youtube_downloader/services/download_service.dart';
+import 'package:youtube_downloader/services/foreground_service_manager.dart';
 import 'package:youtube_downloader/services/notification_service.dart';
 import 'package:youtube_downloader/services/youtube_explode_service.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -33,7 +34,11 @@ class DownloadQueueManager {
   }
 
   void _tryStartNext() {
-    if (_activeDownloads >= _maxConcurrent || _queue.isEmpty) return;
+    if (_activeDownloads >= _maxConcurrent) return;
+    if (_activeDownloads == 0 && _queue.isEmpty) {
+      ForegroundServiceManager.stop();
+      return;
+    }
 
     final task = _queue.removeFirst();
     _activeDownloads++;
@@ -45,6 +50,7 @@ class DownloadQueueManager {
   }
 
   Future<void> _startDownload(DownloadTask task) async {
+    await ForegroundServiceManager.start();
     final manifest = await youtubeService.youtube.videos.streamsClient
         .getManifest(task.url);
 

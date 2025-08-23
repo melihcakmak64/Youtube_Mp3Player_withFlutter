@@ -43,8 +43,6 @@ class DownloadQueueManager {
   }
 
   Future<void> _startDownload(DownloadTask task) async {
-    await ForegroundServiceManager.start();
-
     final finalFile = await downloadService.download(
       downloadTask: task,
       onProgress: (progress) async {

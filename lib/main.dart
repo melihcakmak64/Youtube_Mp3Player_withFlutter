@@ -9,7 +9,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await PermissionHandler.ensurePermissions();
   ForegroundServiceManager.init();
-  await ForegroundServiceManager.start();
   await NotificationService.init();
   runApp(ProviderScope(child: const MainApp()));
 }

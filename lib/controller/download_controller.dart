@@ -7,17 +7,12 @@ import 'package:youtube_downloader/model/ResponseModel.dart';
 import 'package:youtube_downloader/services/download_service.dart';
 import 'package:youtube_downloader/core/PermissionHandler.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
-import 'package:youtube_downloader/services/youtube_explode_service.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class DownloadController extends StateNotifier<Map<String, DownloadInfo>> {
   final DownloadService downloadService;
-  final YoutubeExplodeService youtubeService;
 
-  DownloadController({
-    required this.downloadService,
-    required this.youtubeService,
-  }) : super({});
+  DownloadController({required this.downloadService}) : super({});
 
   Future<void> startForegroundTask() async {
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);

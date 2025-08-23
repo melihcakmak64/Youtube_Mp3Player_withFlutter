@@ -24,8 +24,6 @@ final downloadServiceProvider = Provider<DownloadService>((ref) {
 
 final qualityOptionsProvider = FutureProvider.autoDispose
     .family<List<StreamInfo>, String>((ref, url) async {
-      final service = ref
-          .read(downloadControllerProvider.notifier)
-          .youtubeService;
+      final service = ref.read(youtubeExplodeServiceProvider);
       return service.getAllQualityOptions(url);
     });

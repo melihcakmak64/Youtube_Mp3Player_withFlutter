@@ -1,3 +1,4 @@
+import 'package:ffmpeg_kit_flutter_new_min/ffmpeg_kit_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_downloader/services/foreground_service_manager.dart';

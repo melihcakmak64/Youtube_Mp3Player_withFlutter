@@ -1,11 +1,64 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:youtube_downloader/core/SharedPreferencesService.dart';
+import 'package:youtube_downloader/model/DownloadTask.dart';
 import 'package:youtube_downloader/services/ffpmeg_service.dart';
+import 'package:youtube_downloader/services/youtube_explode_service.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 typedef ProgressCallback = void Function(double progress);
 
 class DownloadService {
+  final YoutubeExplodeService youtubeExplodeService = YoutubeExplodeService();
+
+  Future<File> download({
+    required DownloadTask downloadTask,
+    required ProgressCallback? onProgress,
+  }) async {
+    final manifest = await youtubeExplodeService.youtube.videos.streamsClient
+        .getManifest(downloadTask.url);
+
+    final stream = manifest.streams.firstWhere(
+      (s) => s.tag == downloadTask.itag,
+    );
+
+    if (stream is VideoOnlyStreamInfo) {
+      final audioStreamInfo = manifest.audioOnly.withHighestBitrate();
+      final videoStreamInfo = stream;
+
+      final videoStream = youtubeExplodeService.youtube.videos.streamsClient
+          .get(videoStreamInfo);
+      final audioStream = youtubeExplodeService.youtube.videos.streamsClient
+          .get(audioStreamInfo);
+
+      final totalVideoBytes = videoStreamInfo.size.totalBytes;
+      final totalAudioBytes = audioStreamInfo.size.totalBytes;
+
+      return await downloadVideo(
+        videoStream: videoStream,
+        audioStream: audioStream,
+        url: downloadTask.url,
+        fileName: downloadTask.fileName,
+        videoBytes: totalVideoBytes,
+        audioBytes: totalAudioBytes,
+        onProgress: onProgress,
+      );
+    } else {
+      // Sadece ses indir
+      final audioStream = youtubeExplodeService.youtube.videos.streamsClient
+          .get(stream);
+      final totalAudioBytes = stream.size.totalBytes;
+
+      return await downloadAudio(
+        stream: audioStream,
+        fileName: downloadTask.fileName,
+        url: downloadTask.url,
+        totalBytes: totalAudioBytes,
+        onProgress: onProgress,
+      );
+    }
+  }
+
   /// Ses dosyası indir ve MP3'e dönüştür
   Future<File> downloadAudio({
     required Stream<List<int>> stream,
@@ -15,7 +68,6 @@ class DownloadService {
     ProgressCallback? onProgress,
   }) async {
     final path = await getDownloadFolderPath();
-
     // Geçici MP4 dosyası
     final file = File('$path/$fileName.mp3');
     if (await file.exists()) await file.delete();

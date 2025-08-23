@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:ffmpeg_kit_flutter_new_min/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_min/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter_new_min/return_code.dart';
 
 class VideoService {
@@ -12,6 +13,7 @@ class VideoService {
     required String outputPath, // artık output path veriyoruz
   }) async {
     // Video stream'i olduğu gibi al, audio stream'i AAC'e çevir
+
     final command =
         '-i "$videoPath" -i "$audioPath" -c:v copy -c:a aac -y "$outputPath"';
 

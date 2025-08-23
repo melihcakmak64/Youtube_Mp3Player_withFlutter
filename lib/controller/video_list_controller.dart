@@ -67,12 +67,7 @@ final videoListControllerProvider =
 final downloadControllerProvider =
     StateNotifierProvider<DownloadController, Map<String, DownloadInfo>>((ref) {
       final downloadService = ref.read(downloadServiceProvider);
-      final youtubeService = ref.read(youtubeExplodeServiceProvider);
-
-      final controller = DownloadController(
-        downloadService: downloadService,
-        youtubeService: youtubeService,
-      );
+      final controller = DownloadController(downloadService: downloadService);
       controller.loadSavedDownloads();
       return controller;
     });

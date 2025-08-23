@@ -9,7 +9,8 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 typedef ProgressCallback = void Function(double progress);
 
 class DownloadService {
-  final YoutubeExplodeService youtubeExplodeService = YoutubeExplodeService();
+  final YoutubeExplodeService youtubeExplodeService;
+  const DownloadService({required this.youtubeExplodeService});
 
   Future<File> download({
     required DownloadTask downloadTask,

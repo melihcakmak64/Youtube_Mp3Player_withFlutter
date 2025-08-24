@@ -6,6 +6,7 @@ import 'package:youtube_downloader/model/DownloadTask.dart';
 import 'package:youtube_downloader/services/download_service.dart';
 import 'package:youtube_downloader/services/foreground_service_manager.dart';
 import 'package:youtube_downloader/services/notification_service.dart';
+import 'package:youtube_downloader/services/youtube_explode_service.dart';
 
 class DownloadQueueManager {
   DownloadQueueManager._internal();
@@ -15,11 +16,9 @@ class DownloadQueueManager {
   int _activeDownloads = 0;
   final int _maxConcurrent = 2;
 
-  late DownloadService downloadService;
-
-  void init({required DownloadService downloadService}) {
-    this.downloadService = downloadService;
-  }
+  DownloadService downloadService = DownloadService(
+    youtubeExplodeService: YoutubeExplodeService(),
+  );
 
   void addTask(DownloadTask task) {
     _queue.add(task);

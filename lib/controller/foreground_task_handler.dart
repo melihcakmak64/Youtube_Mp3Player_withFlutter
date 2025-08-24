@@ -12,11 +12,6 @@ void startCallback() {
 class MyTaskHandler extends TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    DownloadQueueManager.instance.init(
-      downloadService: DownloadService(
-        youtubeExplodeService: YoutubeExplodeService(),
-      ),
-    );
     FlutterForegroundTask.updateService(
       notificationTitle: 'Foreground Task',
       notificationText: 'service started',

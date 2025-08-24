@@ -17,7 +17,6 @@ final downloadServiceProvider = Provider<DownloadService>((ref) {
   final downloadService = DownloadService(
     youtubeExplodeService: ref.read(youtubeExplodeServiceProvider),
   );
-  DownloadQueueManager.instance.init(downloadService: downloadService);
   return downloadService;
 });
 

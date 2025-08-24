@@ -1,8 +1,6 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:youtube_downloader/controller/download_queue_controller.dart';
 import 'package:youtube_downloader/model/DownloadTask.dart';
-import 'package:youtube_downloader/services/download_service.dart';
-import 'package:youtube_downloader/services/youtube_explode_service.dart';
 
 @pragma('vm:entry-point')
 void startCallback() {

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:youtube_downloader/controller/download_queue_controller.dart';
 import 'package:youtube_downloader/services/download_service.dart';
 import 'package:youtube_downloader/services/music_player_service.dart';
 import 'package:youtube_downloader/services/youtube_explode_service.dart';
